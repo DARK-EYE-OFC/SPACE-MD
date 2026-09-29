@@ -1,0 +1,6 @@
+node_modules/
+session/
+baileys_store.json
+main-backup.js
+.env
+*.log
