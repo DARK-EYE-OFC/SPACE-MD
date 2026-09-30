@@ -9,6 +9,7 @@
  * - Baileys Library by @adiwajshing
  * - Pair Code implementation inspired by Arslan-Tech & Arslan-MD
  */
+require('dotenv').config()
 require('./settings')
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
@@ -104,7 +105,7 @@ setInterval(() => {
     }
 }, 30_000) // check every 30 seconds
 
-let phoneNumber = ""
+let phoneNumber = process.env.PAIRING_NUMBER || ""
 let owner = JSON.parse(fs.readFileSync('./data/owner.json'))
 
 global.botname = "SPACE-MD"
@@ -236,12 +237,23 @@ async function startXeonBotInc() {
     if (pairingCode && !XeonBotInc.authState.creds.registered) {
         if (useMobile) throw new Error('Cannot use pairing code with mobile api')
 
-        let phoneNumber
-        if (!!global.phoneNumber) {
-            phoneNumber = global.phoneNumber
-        } else {
-            phoneNumber = await question(chalk.bgBlack(chalk.greenBright(`Please type your WhatsApp number 😍\nFormat: 263XXXXXXXXX (without + or spaces) : `)))
-        }
+let requestedPhoneNumber = phoneNumber
+
+if (!requestedPhoneNumber && global.phoneNumber) {
+    requestedPhoneNumber = global.phoneNumber
+}
+
+if (!requestedPhoneNumber) {
+    requestedPhoneNumber = await question(
+        chalk.bgBlack(
+            chalk.greenBright(
+                `Please type your WhatsApp number 😍\nFormat: 263XXXXXXXXX (without + or spaces) : `
+            )
+        )
+    )
+}
+
+phoneNumber = requestedPhoneNumber
 
         // Clean the phone number - remove any non-digit characters
         phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
