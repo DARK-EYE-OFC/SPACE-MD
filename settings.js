@@ -1,29 +1,32 @@
-// 🌟 Bot Configuration File 🌟
-// Edit these values to personalize your SPACE-MD
+// 🌟 SPACE-MD v5.6.9 Configuration
 
 const settings = {
+  // 🤖 Bot Identity
+  botName: '🚀 SPACE-MD',
+  botOwner: '👑 DARK-EYE-OFC',
+
   // 🏷️ Sticker Settings
-  packname: '💎 SPACE-MD 💎',
+  packname: '🚀 SPACE-MD 🚀',
   author: '👑 DARK-EYE-OFC',
 
-  // 🤖 Bot Identity
-packname: '🚀 SPACE-MD 🚀',
-author: '👑 DARK-EYE-OFC',
-botName: '🚀 SPACE-MD',
-botOwner: '👑 DARK-EYE-OFC',
-
-  // 🎬 APIs
-  giphyApiKey: 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq', // For GIF commands
-
   // ⚙️ Bot Mode
-  commandMode: 'public', // Options: 'public' (everyone) | 'private' (owner only)
+  commandMode: 'public',
 
   // 📝 Meta Information
-  description: '🚀 SPACE-MD — A powerful WhatsApp bot developed by DARK-EYE-OFC.',
-  version: '2.0.0',
-updateZipUrl: "https://github.com/DARK-EYE-OFC/SPACE-MD/archive/refs/heads/main.zip",
-  
+  description: '🚀 SPACE-MD v5.6.9 — WhatsApp Bot developed by DARK-EYE-OFC.',
+  version: '5.6.9',
+
+  // 🌐 Hosting
+  port: Number(process.env.PORT) || 10000,
+
+  // 💾 Local store
+  storeWriteInterval: 10000,
+
+  // 🔗 GitHub updater
+  updateZipUrl: 'https://github.com/DARK-EYE-OFC/SPACE-MD/archive/refs/heads/main.zip',
+
+  // 🎬 APIs
+  giphyApiKey: process.env.GIPHY_API_KEY || 'qnl7ssQChTdPjsKta2Ax2LMaGXz303tq',
 };
 
-// Export so other files can use it
 module.exports = settings;

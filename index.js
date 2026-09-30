@@ -53,6 +53,40 @@ store.readFromFile()
 const settings = require('./settings')
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 
+// 🌐 SPACE-MD Hosting Health Server
+const http = require('http');
+
+const healthServer = http.createServer((req, res) => {
+    if (req.url === '/health') {
+        res.writeHead(200, {
+            'Content-Type': 'application/json; charset=utf-8'
+        });
+
+        res.end(JSON.stringify({
+            status: 'ok',
+            bot: 'SPACE-MD',
+            version: settings.version,
+            uptime: Math.floor(process.uptime())
+        }));
+
+        return;
+    }
+
+    res.writeHead(200, {
+        'Content-Type': 'text/plain; charset=utf-8'
+    });
+
+    res.end(
+        `🚀 SPACE-MD v${settings.version}\n` +
+        `Status: Online\n` +
+        `Developer: DARK-EYE-OFC\n`
+    );
+});
+
+healthServer.listen(settings.port, '0.0.0.0', () => {
+    console.log(`🌐 SPACE-MD health server running on port ${settings.port}`);
+});
+
 // Memory optimization - Force garbage collection if available
 setInterval(() => {
     if (global.gc) {
@@ -98,7 +132,6 @@ async function startXeonBotInc() {
     const XeonBotInc = makeWASocket({
         version,
         logger: pino({ level: 'silent' }),
-        printQRInTerminal: !pairingCode,
         browser: ["Ubuntu", "Chrome", "20.0.04"],
         auth: {
             creds: state.creds,
