@@ -9,7 +9,7 @@ const ytdl = require('ytdl-core');
 const path = require('path');
 const axios = require('axios');
 const ffmpeg = require('fluent-ffmpeg');
-
+const { getSettings } = require('./lib/sessionSettings');
 const { addWelcome, delWelcome, isWelcomeOn, addGoodbye, delGoodBye, isGoodByeOn, isSudo } = require('./lib/index');
 // Optional command loader — missing commands won't crash SPACE-MD
 const optionalCommand = (file) => {
@@ -51,7 +51,7 @@ const explodeCommand = optionalCommand('explode');
 const spyCommand = require('./commands/spy');
 const unhackCommand = require('./commands/unhack'); // Adjust path if needed
 const hackCommand = require('./commands/hack');
-
+const aliveCommand = require('./commands/alive');
 const getppCommand =optionalCommand('getpp');
 const helpCommand = require('./commands/help');
 const banCommand = optionalCommand('ban');
@@ -74,7 +74,7 @@ const memeCommand = require('./commands/meme');
 const tagCommand = require('./commands/tag');
 const jokeCommand = require('./commands/joke');
 const quoteCommand = require('./commands/quote');
-const factCommand = optionalCommand('fact');
+const factCommand = require('./commands/fact');
 const weatherCommand = require('./commands/weather');
 const newsCommand = require('./commands/news');
 const kickCommand = require('./commands/kick');
@@ -83,18 +83,20 @@ const { startHangman, guessLetter } = require('./commands/hangman');
 const { startTrivia, answerTrivia } = require('./commands/trivia');
 const { complimentCommand } = optionalCommand('compliment');
 const { insultCommand } = require('./commands/insult');
-const { eightBallCommand } = optionalCommand('eightball');
+const { eightBallCommand } = require('./commands/eightball');
 const { lyricsCommand } = require('./commands/lyrics');
 const { dareCommand } = optionalCommand('dare');
 const { truthCommand } = require('./commands/truth');
-const { clearCommand } = optionalCommand('clear');
+const { clearCommand } = require('./commands/clear');
 const pingCommand = require('./commands/ping');
 const welcomeCommand = require('./commands/welcome');
 const goodbyeCommand = require('./commands/goodbye');
 const githubCommand = require('./commands/github');
 const { handleAntiBadwordCommand, handleBadwordDetection } = require('./lib/antibadword');
 const antibadwordCommand = optionalCommand('antibadword');
-const { handleChatbotCommand, handleChatbotResponse } = optionalCommand('chatbot');
+const chatbotModule = optionalCommand('chatbot');
+const handleChatbotCommand = chatbotModule.handleChatbotCommand;
+const handleChatbotResponse = chatbotModule.handleChatbotResponse;
 const takeCommand = require('./commands/take');
 const characterCommand = optionalCommand('character');
 const wastedCommand = require('./commands/wasted');
@@ -108,7 +110,8 @@ const { handlePromotionEvent } = require('./commands/promote');
 const { handleDemotionEvent } = optionalCommand('demote');
 const viewOnceCommand = require('./commands/viewonce');
 const clearSessionCommand = optionalCommand('clearsession');
-const { autoStatusCommand, handleStatusUpdate } = optionalCommand('autostatus');
+const autoStatusCommand = null;
+const handleStatusUpdate = null;
 const { simpCommand } = require('./commands/simp');
 const { stupidCommand } = require('./commands/stupid');
 const stickerTelegramCommand = require('./commands/stickertelegram');
@@ -119,7 +122,7 @@ const facebookCommand = optionalCommand('facebook');
 const playCommand = require('./commands/play');
 const tiktokCommand = require('./commands/tiktok');
 const songCommand = require('./commands/song');
-const aiCommand = optionalCommand('ai');
+const aiCommand = require('./commands/ai');
 const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
@@ -130,7 +133,7 @@ const imagineCommand = require('./commands/imagine');
 const videoCommand = require('./commands/video');
 const sudoCommand = require('./commands/sudo');
 const shafiCommand = require('./commands/shafi');
-const aliveCommand = optionalCommand('alive');
+
 const tagAllCommand = require('./commands/tagall');
 const kissCommand = require('./commands/kiss');
 const updateCommand = require('./commands/update');
@@ -145,7 +148,9 @@ const fightCommand = optionalCommand('fight');
 const timeCommand = require('./commands/time');
 const imgCommand = require('./commands/img');
 const urlCommand = require('./commands/url');
-const settingsCommand = optionalCommand('settings');
+const settingsCommand = require('./commands/settings');
+const prefixCommand = require('./commands/prefix');
+const setPrefixCommand = require('./commands/setprefix');
 const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/pmblocker');
 
 
@@ -153,7 +158,7 @@ const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/
 global.packname = settings.packname;
 global.author = settings.author;
 global.channelLink = "https://whatsapp.com/channel/0029VbAm8LqL2ATpxklIct2g";
-global.ytch = "supremLord";
+global.ytch = "dark-eye-officials";
 
 // Add this near the top of main.js with other global configurations
 const channelInfo = {
@@ -192,20 +197,34 @@ async function handleMessages(sock, messageUpdate, printLog) {
         const isGroup = chatId.endsWith('@g.us');
    const senderIsSudo = await isSudo(senderId);
 
-        const userMessage = (
-            message.message?.conversation?.trim() ||
-            message.message?.extendedTextMessage?.text?.trim() ||
-            message.message?.imageMessage?.caption?.trim() ||
-            message.message?.videoMessage?.caption?.trim() ||
-            ''
-        ).toLowerCase().replace(/\.\\s+/g, '.').trim();
+        // Preserve original message text
+const rawText =
+    message.message?.conversation?.trim() ||
+    message.message?.extendedTextMessage?.text?.trim() ||
+    message.message?.imageMessage?.caption?.trim() ||
+    message.message?.videoMessage?.caption?.trim() ||
+    '';
 
-        // Preserve raw message for commands like .tag that need original casing
-        const rawText = message.message?.conversation?.trim() ||
-            message.message?.extendedTextMessage?.text?.trim() ||
-            message.message?.imageMessage?.caption?.trim() ||
-            message.message?.videoMessage?.caption?.trim() ||
-            '';
+const sessionSettings = getSettings(sock);
+const activePrefix = sessionSettings.prefix;
+
+let userMessage = rawText.toLowerCase().trim();
+
+// Only the currently active prefix can start a command.
+if (activePrefix) {
+    const prefixLower = activePrefix.toLowerCase();
+
+    if (userMessage.startsWith(prefixLower)) {
+        userMessage =
+            '.' + userMessage.slice(activePrefix.length).trim();
+    } else {
+        // Different/old prefix = normal message.
+        userMessage = '';
+    }
+} else {
+    // Prefixless mode will be handled separately.
+    userMessage = userMessage.trim();
+}
 
         // Only log command usage
         if (userMessage.startsWith('.')) {
@@ -723,13 +742,26 @@ case userMessage === '.fight' || userMessage === '.battle' || userMessage === '.
                 const stupidArgs = userMessage.split(' ').slice(1);
                 await stupidCommand(sock, chatId, stupidQuotedMsg, stupidMentionedJid, senderId, stupidArgs);
                 break;
-                case userMessage.startsWith('.kiss'):
-  await kissCommand.run({ conn: sock, m: message, args: userMessage.split(' ').slice(1) });
-  break;
-      case userMessage === '.settings':
+            case userMessage.startsWith('.kiss'):
+                await kissCommand.run({ conn: sock, m: message, args: userMessage.split(' ').slice(1) });
+                break;
+            case userMessage === '.settings':
                 await settingsCommand(sock, chatId, message);
                 break;
+      		
+            case userMessage === '.prefix':
+                await prefixCommand(sock, chatId, message);
+                break;
 
+            case userMessage.startsWith('.setprefix'):
+                await setPrefixCommand(
+        sock,
+        chatId,
+        message,
+        userMessage.split(' ').slice(1),
+        message.key.fromMe || senderIsSudo
+    );
+    break;
                 
             case userMessage === '.dare':
                 await dareCommand(sock, chatId, message);
@@ -999,9 +1031,16 @@ case userMessage.startsWith('.sudo'):
             case userMessage.startsWith('.tiktok') || userMessage.startsWith('.tt'):
                 await tiktokCommand(sock, chatId, message);
                 break;
-            case userMessage.startsWith('.gpt') || userMessage.startsWith('.gemini'):
-                await aiCommand(sock, chatId, message);
-                break;
+case userMessage.startsWith('.ai'):
+case userMessage.startsWith('.gpt'):
+case userMessage.startsWith('.gemini'):
+    await aiCommand(
+        sock,
+        chatId,
+        message,
+        userMessage.split(' ').slice(1)
+    );
+    break;
             case userMessage.startsWith('.translate') || userMessage.startsWith('.trt'):
                 const commandLength = userMessage.startsWith('.translate') ? 10 : 4;
                 await handleTranslateCommand(sock, chatId, message, userMessage.slice(commandLength));
@@ -1047,16 +1086,31 @@ case userMessage.startsWith('.sudo'):
                     });
                 }
 
-            default:
-                if (isGroup) {
-                    // Handle non-command group messages
-                    if (userMessage) {  // Make sure there's a message
-                        await handleChatbotResponse(sock, chatId, message, userMessage, senderId);
-                    }
-                    await Antilink(message, sock);
-                    await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
-                }
-                break;
+default:
+    if (isGroup) {
+        // Handle non-command group messages
+        if (userMessage) {
+            if (typeof handleChatbotResponse === 'function') {
+                await handleChatbotResponse(
+                    sock,
+                    chatId,
+                    message,
+                    userMessage,
+                    senderId
+                );
+            }
+
+            await Antilink(message, sock);
+            await handleBadwordDetection(
+                sock,
+                chatId,
+                message,
+                userMessage,
+                senderId
+            );
+        }
+    }
+    break;
         }
 
         if (userMessage.startsWith('.')) {
@@ -1175,7 +1229,10 @@ async function handleGroupParticipantUpdate(sock, update) {
 module.exports = {
     handleMessages,
     handleGroupParticipantUpdate,
+
     handleStatus: async (sock, status) => {
-        await handleStatusUpdate(sock, status);
+        if (typeof handleStatusUpdate === 'function') {
+            await handleStatusUpdate(sock, status);
+        }
     }
 };
