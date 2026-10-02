@@ -5,14 +5,14 @@ const path = require('path');
 
 async function githubCommand(sock, chatId, message) {
   try {
-    const res = await fetch('https://api.github.com/repos/Shafiullah90/Shafi-king-bot');
+    const res = await fetch('https://api.github.com/repos/DARK-EYE-OFC/SPACE-MD');
     if (!res.ok) throw new Error('GitHub API fetch failed');
     const json = await res.json();
 
     const caption = `
-┏━━━━━━━━━━━━━━━━━━━━━━━━━━┓
-┃ 🧑‍💻 SPACE-MD-GITHUB INFO🧑‍💻
-┗━━━━━━━━━━━━━━━━━━━━━━━━━━┛
+┏━━━━━━━━━━━━━━━━━━━━━━━┓
+┃ 💻 SPACE-MD-GITHUB INFO💻
+┗━━━━━━━━━━━━━━━━━━━━━━━┛
 
 📁 *Repo Name:* ${json.name}
 ⭐ *Stars:* ${json.stargazers_count}
@@ -28,7 +28,7 @@ async function githubCommand(sock, chatId, message) {
 📍 _Stay curious, stay coding!_
 `;
 
-    const imgPath = path.join(__dirname, '../assets/june_menu.jpg'); // Rename your image accordingly
+    const imgPath = path.join(__dirname, '../assets/bot_image.jpg'); // Rename your image accordingly
     const imgBuffer = fs.existsSync(imgPath)
       ? fs.readFileSync(imgPath)
       : null;

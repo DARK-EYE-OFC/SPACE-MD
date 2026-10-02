@@ -1,39 +1,108 @@
 const fetch = require('node-fetch');
 
-async function lyricsCommand(sock, chatId, songTitle) {
+async function lyricsCommand(sock, chatId, message, songTitle) {
+
+    const react = async (emoji) => {
+        try {
+            await sock.sendMessage(chatId, {
+                react: {
+                    text: emoji,
+                    key: message.key
+                }
+            });
+        } catch (error) {
+            console.error('Lyrics reaction error:', error);
+        }
+    };
+
     if (!songTitle) {
-        await sock.sendMessage(chatId, { 
-            text: '🔍 Please enter the song name to get the lyrics! Usage: *lyrics <song name>*'
+        await sock.sendMessage(chatId, {
+            text:
+                '🔍 Please enter a song name!\n\n' +
+                'Usage: *.lyrics <song name>*\n\n' +
+                'Example:\n' +
+                '*.lyrics Somehow You Want Me*'
         });
         return;
     }
 
     try {
-        // Fetch song lyrics using the some-random-api.com API
-        const apiUrl = `https://api.lyrics.ovh/v1/=${encodeURIComponent(songTitle)}`;
-        const res = await fetch(apiUrl);
-        
+        await react('♻️');
+
+        const searchUrl =
+            `https://lrclib.net/api/search?q=${encodeURIComponent(songTitle)}`;
+
+        const res = await fetch(searchUrl, {
+            headers: {
+                'User-Agent': 'SPACE-MD/5.6.9'
+            }
+        });
+
         if (!res.ok) {
-            throw await res.text();
+            throw new Error(`LRCLIB returned ${res.status}`);
         }
-        
-        const json = await res.json();
-        
-        if (!json.lyrics) {
-            await sock.sendMessage(chatId, { 
-                text: `❌ Sorry, I couldn't find any lyrics for "${songTitle}".`
+
+        const results = await res.json();
+
+        if (!Array.isArray(results) || results.length === 0) {
+            await react('❌️');
+
+            await sock.sendMessage(chatId, {
+                text:
+                    `❌ No lyrics found for:\n` +
+                    `🎵 ${songTitle}`
             });
             return;
         }
-        
-        // Sending the formatted result to the user
-        await sock.sendMessage(chatId, {
-            text: `🎵 *Song Lyrics* 🎶\n\n▢ *Title:* ${json.title || songTitle}\n▢ *Artist:* ${json.author || 'Unknown'}\n\n📜 *Lyrics:*\n${json.lyrics}\n\nHope you enjoy the music! 🎧 🎶`
-        });
+
+        // Find the first result that actually contains lyrics
+        const result = results.find(
+            item => item.plainLyrics && item.plainLyrics.trim()
+        );
+
+        if (!result) {
+            await react('❌️');
+
+            await sock.sendMessage(chatId, {
+                text:
+                    `❌ Lyrics were not available for:\n` +
+                    `🎵 ${songTitle}`
+            });
+            return;
+        }
+
+        const artist = result.artistName || 'Unknown';
+        const song = result.trackName || songTitle;
+        const lyrics = result.plainLyrics.trim();
+
+        await sock.sendMessage(
+            chatId,
+            {
+                text:
+                    `╭━━━〔 🎵 𝐒𝐏𝐀𝐂𝐄-𝐌𝐃 〕━━━╮\n` +
+                    `┃ 🎶 *SONG LYRICS*\n` +
+                    `┃\n` +
+                    `┃ 🎤 *Artist:* ${artist}\n` +
+                    `┃ 🎵 *Song:* ${song}\n` +
+                    `╰━━━━━━━━━━━━━━━━━━╯\n\n` +
+                    `📜 *LYRICS:*\n\n` +
+                    `${lyrics}\n\n` +
+                    `> *Powered by DARK-EYE-OFC*`
+            },
+            { quoted: message }
+        );
+
+        await react('✅️');
+
     } catch (error) {
         console.error('Error in lyrics command:', error);
-        await sock.sendMessage(chatId, { 
-            text: `❌ An error occurred while fetching the lyrics for "${songTitle}".`
+
+        await react('❌️');
+
+        await sock.sendMessage(chatId, {
+            text:
+                `❌ An error occurred while fetching lyrics for:\n` +
+                `🎵 ${songTitle}`
         });
     }
 }

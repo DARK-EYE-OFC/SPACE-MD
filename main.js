@@ -25,6 +25,7 @@ const optionalCommand = (file) => {
 };
 
 // Command imports
+const infoCommand = optionalCommand('./commands/info');
 const flirtCommand = optionalCommand('flirt');
 const flirt2Command = optionalCommand('flirt2');
 const ghosttrace = require('./commands/ghosttrace');
@@ -67,7 +68,7 @@ const ttsCommand = require('./commands/tts');
 const { tictactoeCommand, handleTicTacToeMove } = require('./commands/tictactoe');
 const { incrementMessageCount, topMembers } = require('./commands/topmembers');
 const ownerCommand = require('./commands/owner');
-const deleteCommand = optionalCommand('delete');
+const deleteCommand = require('./commands/delete');
 const { handleAntilinkCommand, handleLinkDetection } = optionalCommand('antilink');
 const { Antilink } = require('./lib/antilink');
 const memeCommand = require('./commands/meme');
@@ -98,7 +99,7 @@ const chatbotModule = optionalCommand('chatbot');
 const handleChatbotCommand = chatbotModule.handleChatbotCommand;
 const handleChatbotResponse = chatbotModule.handleChatbotResponse;
 const takeCommand = require('./commands/take');
-const characterCommand = optionalCommand('character');
+const characterCommand = optionalCommand('./commands/character');
 const wastedCommand = require('./commands/wasted');
 const shipCommand = require('./commands/ship');
 const groupInfoCommand = require('./commands/groupinfo');
@@ -112,6 +113,7 @@ const viewOnceCommand = require('./commands/viewonce');
 const clearSessionCommand = optionalCommand('clearsession');
 const autoStatusCommand = null;
 const handleStatusUpdate = null;
+const groupLinkCommand = require('./commands/grouplink');
 const { simpCommand } = require('./commands/simp');
 const { stupidCommand } = require('./commands/stupid');
 const stickerTelegramCommand = require('./commands/stickertelegram');
@@ -396,7 +398,12 @@ case (userMessage && userMessage.trim().toLowerCase() === '.whoisgay'):
   await whoisgayCommand.run({ conn: sock, m: message, args: userMessage.split(' ').slice(1) });
   break;
 
-            case userMessage === '.delete' || userMessage === '.del':
+case userMessage === '.grouplink':
+case userMessage === '.group-link':
+    await groupLinkCommand(sock, chatId, message);
+    break;         
+
+   case userMessage === '.delete' || userMessage === '.del':
                 await deleteCommand(sock, chatId, message, senderId);
                 break;
             case userMessage.startsWith('.attp'):
@@ -467,7 +474,7 @@ case (userMessage && userMessage.trim().toLowerCase() === '.whoisgay'):
                 break;
             case userMessage === '.tagall':
                 if (isSenderAdmin || message.key.fromMe) {
-                    await tagAllCommand(sock, chatId, senderId, message);
+                    await tagAllCommand(sock, chatId, message);
                 } else {
                     await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use the .tagall command.', ...channelInfo }, {quoted: message});
                 }
@@ -727,10 +734,18 @@ case userMessage === '.fight' || userMessage === '.battle' || userMessage === '.
                 const question = userMessage.split(' ').slice(1).join(' ');
                 await eightBallCommand(sock, chatId, question);
                 break;
-            case userMessage.startsWith('.lyrics'):
-                const songTitle = userMessage.split(' ').slice(1).join(' ');
-                await lyricsCommand(sock, chatId, songTitle);
-                break;
+            case userMessage.startsWith('.lyrics'): {
+    const songTitle = userMessage.split(' ').slice(1).join(' ');
+
+    await lyricsCommand(
+        sock,
+        chatId,
+        message,
+        songTitle
+    );
+
+    break;
+}
             case userMessage.startsWith('.simp'):
                 const quotedMsg = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 const mentionedJid = message.message?.extendedTextMessage?.contextInfo?.mentionedJid || [];
@@ -1088,7 +1103,37 @@ case userMessage.startsWith('.gemini'):
 
 default:
     if (isGroup) {
-        // Handle non-command group messages
+ 
+// Unknown command handler
+if (userMessage.startsWith('.')) {
+    const usedCommand = userMessage.split(/\s+/)[0];
+
+    await sock.sendMessage(chatId, {
+        react: {
+            text: '🔍',
+            key: message.key
+        }
+    });
+
+    await sock.sendMessage(
+        chatId,
+        {
+            text:
+                `❌️ ${usedCommand} is not found in the Commands library.\n\n` +
+                `Please contact the creator to add it up or try .menu to see available Commands`
+        },
+        { quoted: message }
+    );
+
+    await sock.sendMessage(chatId, {
+        react: {
+            text: '❌️',
+            key: message.key
+        }
+    });
+}
+
+       // Handle non-command group messages
         if (userMessage) {
             if (typeof handleChatbotResponse === 'function') {
                 await handleChatbotResponse(

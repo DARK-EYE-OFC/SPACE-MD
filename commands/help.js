@@ -2,169 +2,280 @@
 const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
+const { getSettings } = require('../lib/sessionSettings');
+
+const commandCategories = {
+    ai: [
+        'ai',
+        'chatbot',
+        'imagine',
+        'translate',
+        'tts',
+        'news',
+        'weather',
+        'time'
+    ],
+
+    download: [
+        'gif',
+        'github',
+        'img',
+        'lyrics',
+        'meme',
+        'play',
+        'song',
+        'ss',
+        'stickertelegram',
+        'tiktok',
+        'url',
+        'video'
+    ],
+
+    fun: [
+        'character',
+        'eightball',
+        'fact',
+        'ghost',
+        'ghosttrace',
+        'hack',
+        'hornycheck',
+        'insult',
+        'joke',
+        'kiss',
+        'lovecheck',
+        'marry',
+        'mindread',
+        'pregnancycheck',
+        'pussylover',
+        'quote',
+        'roseday',
+        'shayari',
+        'ship',
+        'simp',
+        'stupid',
+        'take',
+        'toilet',
+        'whoisgay',
+        'wasted'
+    ],
+
+    games: [
+        'hangman',
+        'tictactoe',
+        'trivia',
+        'truth',
+        'dare'
+    ],
+
+    general: [
+        'alive',
+        'clear',
+        'goodbye',
+        'groupinfo',
+        'help',
+        'owner',
+        'ping',
+        'support',
+        'whois'
+    ],
+
+    group: [
+        'antibadword',
+        'antidelete',
+        'antilink',
+        'delete',
+        'demote',
+        'grouplink',
+        'hidetag',
+        'invite',
+        'kick',
+        'mute',
+        'promote',
+        'tag',
+        'tagall',
+        'unban',
+        'unmute',
+        'warn',
+        'warnings',
+        'welcome'
+    ],
+
+    owner: [
+        'autostatus',
+        'ban',
+        'clearsession',
+        'deletebot',
+        'pmblocker',
+        'setpp',
+        'sudo',
+        'unhack',
+        'update',
+        'viewonce'
+    ],
+
+    settings: [
+        'prefix',
+        'setprefix',
+        'settings',
+        'resetlink'
+    ],
+
+    system: [
+        'pair',
+        'spy',
+        'sticker',
+        'sticker-alt',
+        'simage-alt',
+        'textmaker',
+        'virus',
+        'fartblasttext',
+        'explode',
+        'bedskills',
+        'brainwash',
+        'callmom',
+        'compliment',
+        'crush',
+        'detect',
+        'emojimix',
+        'facebook',
+        'flirt',
+        'flirt2',
+        'getpp',
+        'goodnight',
+        'auntyalert',
+        'attp',
+        'shafi',
+        'staff',
+        'mirror',
+        'topmembers'
+    ]
+};
+
+function formatUptime(seconds) {
+    seconds = Math.floor(seconds);
+
+    const days = Math.floor(seconds / 86400);
+    seconds %= 86400;
+
+    const hours = Math.floor(seconds / 3600);
+    seconds %= 3600;
+
+    const minutes = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+
+    return `${days}D - ${hours}H - ${minutes}M - ${secs}S`;
+}
+
+function getMemoryUsage() {
+    const memory = process.memoryUsage().rss / 1024 / 1024;
+    return `${memory.toFixed(1)} MB`;
+}
+
+function getCommandCount() {
+    return Object.values(commandCategories)
+        .reduce((total, commands) => total + commands.length, 0);
+}
+
+function formatCommands(commands) {
+    return commands
+        .map((command, index) =>
+            `┃╋━➤ .${command}`
+        )
+        .join('\n');
+}
+
+function categoryBlock(title, emoji, commands) {
+    return (
+        `╭───❒ *${emoji}${title}* ❒▪︎▪︎\n` +
+        `┃🔢 *${commands.length} COMMANDS*\n` +
+        `┃\n` +
+        `${formatCommands(commands)}\n` +
+        `╰───────────────❒`
+    );
+}
 
 async function helpCommand(sock, chatId, message) {
-
-    const helpMessage = `
-╭━━━〔 *𝐌𝐀𝐈𝐍 𝐌𝐄𝐍𝐔* 〕━━━╮
-┃ 💠 *Bot Name:* ${settings.botName || '🔵𝐒𝐏𝐀𝐂𝐄 𝐌𝐃'}
-┃ 🔖 *Version:* ${settings.version || '5.6.9'}
-┃ 👑 *Owner:* ${settings.botOwner || '𝐀𝐋𝐄𝐗 𝐓𝐇𝐄𝐎𝐍'}
-┃ 📺 *YouTube:* ${global.ytch || 'Not set'}
-╰━━━━━━━━━━━━━━╯
-
-🔥 _"💦𝐒𝐏𝐀𝐂𝐄 𝐌𝐃🇿🇼 is not just a bot, it's an experience."_
-✨ _Designed with 💙 by 𝑫𝑨𝑹𝑲 𝑬𝒀𝑬 𝑶𝑭𝑪_
-🔍 _Use the commands below to explore the magic🪄._
-
-━━━━━━━━━━━━━━━
-> 📌*COMMAND MENU*
-━━━━━━━━━━━━━━━
-
-╭─🌐 *GENERAL ZONE*
-│ 🌐 .help
-│ 📡 .ping
-│ ⚡ .alive
-│ 🗣️ .tts
-│ 👑 .owner
-│ 😂 .joke
-│ 📜 .quote
-│ 📚 .fact
-│ 🌤️ .weather
-│ 📰 .news
-│ 🖍️ .attp
-│ 🎶 .lyrics
-│ 🎱 .8ball
-│ 👥 .groupinfo
-│ 🛡️ .staff
-│ 📎 .vv
-│ 🌍 .trt
-│ 🖼️ .ss
-│ 🆔 .jid
-╰──────────────
-
-╭─🛡️ *GROUP GUARD*
-│ 🚫 .ban
-│ 🔺 .promote
-│ 🔻 .demote
-│ 🔇 .mute
-│ 🔊 .unmute
-│ 🗑️ .delete
-│ 🥾 .kick
-│ ⚠️ .warnings
-│ ⚡ .warn
-│ 🛑 .antilink
-│ 🤬 .antibadword
-│ 🧹 .clear
-│ 📢 .tag
-│ 📣 .tagall
-│ 🤖 .chatbot
-│ 🔁 .resetlink
-│ 👋 .welcome
-│ 🥀 .goodbye
-╰──────────────
-
-╭─🔒 *OWNER PANEL*
-│ 🛠️ .mode
-│ 📶 .autostatus
-│ 🧼 .clearsession
-│ 👁‍🗨 .antidelete
-│ 🗑 .cleartmp
-│ 🖼 .setpp
-│ ❤️ .autoreact
-╰──────────────
-
-╭─🎨 *STICKER TOOLS*
-│ 🌀 .blur
-│ 🖼️ .simage
-│ 🪄 .sticker
-│ 🔗 .tgsticker
-│ 😂 .meme
-│ 🏷️ .take
-│ 😎 .emojimix
-╰──────────────
-
-╭─🎮 *GAME ROOM*
-│ ❌⭕ .tictactoe
-│ 💀 .hangman
-│ 🔤 .guess
-│ ❓ .trivia
-│ ✅ .answer
-│ 🔍 .truth
-│ 🔥 .dare
-╰──────────────
-
-╭─🧠 *AI POWER*
-│ 🤖 .gpt
-│ 🧠 .gemini
-│ 🎨 .imagine
-│ 🌌 .flux
-╰──────────────
-
-╭─🎉 *FUN ZONE*
-│ 💘 .compliment
-│ 🤬 .insult
-│ 😎 .flirt
-│ 🎭 .shayari
-│ 🌙 .goodnight
-│ 🌹 .roseday
-│ 🎭 .character
-│ ☠️ .wasted
-│ 🚢 .ship
-│ 🤤 .simp
-│ 🤡 .stupid
-╰──────────────
-
-╭─✍️ *TEXT MAKER*
-│ 💎 .metallic
-│ 🧊 .ice
-│ ❄️ .snow
-│ ✨ .impressive
-│ 🌌 .matrix
-│ 💡 .light
-│ 🎇 .neon
-│ 👿 .devil
-│ 💜 .purple
-│ ⚡ .thunder
-│ 🌿 .leaves
-│ 🎬 .1917
-│ 🛡️ .arena
-│ 💀 .hacker
-│ 🏖️ .sand
-│ 🩷 .blackpink
-│ 💥 .glitch
-│ 🔥 .fire
-╰──────────────
-
-╭─📥 *MEDIA ZONE*
-│ 🎧 .play
-│ 🎵 .song
-│ 📹 .video
-│ ▶️ .ytmp4
-│ 📸 .instagram
-│ 📘 .facebook
-│ 🎞️ .tiktok
-╰──────────────
-
-╭─💻 *GITHUB CORNER*
-│ 🖥️ .git
-│ 📂 .github
-│ 🧠 .sc
-│ 🧾 .script
-│ 📦 .repo
-╰──────────────
-
-> ©𝓹𝓸𝔀𝓮𝓻𝓮𝓭 𝓫𝔂 *𝑫𝑨𝑹𝑲 𝑬𝒀𝑬 𝑻𝑬𝑪𝑯®*
-📢 *Join our channel*
-`;
-
     try {
+        const sessionSettings = getSettings(sock);
 
-        // Menu image
-        const imagePath = path.join(
+        const prefix =
+            sessionSettings.prefix === null ||
+            sessionSettings.prefix === '' ||
+            sessionSettings.prefix === false
+                ? 'NONE'
+                : sessionSettings.prefix;
+
+        const totalCommands = getCommandCount();
+
+        const panel =
+            process.env.RENDER_EXTERNAL_URL ||
+            'Termux / PM2';
+
+        const helpMessage =
+            `╔═══❖•ೋ° °ೋ•❖═══╗\n` +
+            `           🔵 *𝐒𝐏𝐀𝐂𝐄-𝐌𝐃* 🇿🇼\n` +
+            `╚═══❖•ೋ° °ೋ•❖═══╝\n\n` +
+
+            `╭━━━━❒ 𝐌𝐄𝐍𝐔 ❒━━━━━╮\n` +
+            `┃ 💠 *BOT NAME:* ${settings.botName || '🚀 SPACE-MD'}\n` +
+            `┃ ✒️ *PREFIX:* [${prefix}]\n` +
+            `┃ 🪧 *VERSION:* ${settings.version || '5.6.9'}\n` +
+            `┃ 👑 *OWNER:* ${settings.botOwner || 'DARK-EYE-OFC'}\n` +
+            `┃ ⏳️ *RUNTIME:* ${formatUptime(process.uptime())}\n` +
+            `┃ 🏷 *COMMANDS:* ${totalCommands}\n` +
+            `┃ 📡 *PANEL:* ${panel}\n` +
+            `┃ 💾 *MEMORY:* ${getMemoryUsage()}\n` +
+            `┃ 📺 *YOUTUBE:* ${global.ytch || 'Not set'}\n` +
+            `┃ 📊 *UPTIME:* ${formatUptime(process.uptime())}\n` +
+            `╰━━━━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('AI CMDS', '🔬', commandCategories.ai)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('DOWNLOAD', '⬇️', commandCategories.download)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('FUN CMDS', '🥳', commandCategories.fun)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('GAMES', '🎮', commandCategories.games)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('GENERAL', '🖥', commandCategories.general)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('GROUP', '🫂', commandCategories.group)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('OWNER', '🔐', commandCategories.owner)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('SETTINGS', '⚙️', commandCategories.settings)}\n\n` +
+            `❒━━━━━━━━━━━━━❒\n\n` +
+
+            `${categoryBlock('SYSTEM', '📟', commandCategories.system)}\n\n` +
+
+            `━━━━━━━━━━━━━\n` +
+            `> *♤powered by DARK-EYE OFC DEV*\n\n` +
+            `_*📢 Join our channel for updates*_`;
+
+        // Primary menu image
+        let imagePath = path.join(
             __dirname,
-            '../assets/bot_image_jpg'
+            '../assets/bot_image.jpg'
         );
+
+        // Fallback for the older filename
+        if (!fs.existsSync(imagePath)) {
+            const fallbackPath = path.join(
+                __dirname,
+                '../assets/bot_image_jpg'
+            );
+
+            if (fs.existsSync(fallbackPath)) {
+                imagePath = fallbackPath;
+            }
+        }
 
         if (!fs.existsSync(imagePath)) {
             console.error(
@@ -183,7 +294,6 @@ async function helpCommand(sock, chatId, message) {
             return;
         }
 
-        // Send menu image + caption
         await sock.sendMessage(
             chatId,
             {
@@ -207,7 +317,6 @@ async function helpCommand(sock, chatId, message) {
         );
 
     } catch (error) {
-
         console.error(
             '❌ Error in help command:',
             error
