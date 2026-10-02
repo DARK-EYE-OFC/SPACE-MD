@@ -1,6 +1,9 @@
 node_modules/
 session/
+session-backup-*/
 baileys_store.json
 main-backup.js
 .env
 *.log
+data/messageCount.json
+package-lock.json
