@@ -97,7 +97,10 @@ const commandCategories = {
         'unmute',
         'warn',
         'warnings',
-        'welcome'
+        'welcome',
+        'tag2',
+        'listonline',
+        'tagonline'
     ],
 
     owner: [

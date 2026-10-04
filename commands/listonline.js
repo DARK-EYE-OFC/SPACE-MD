@@ -1,4 +1,43 @@
-const settings = require('../settings.js');
+ const onlineCache = new Map();
+
+function updatePresence(id, presences) {
+    if (!id || !presences) return;
+
+    if (!onlineCache.has(id)) {
+        onlineCache.set(id, new Map());
+    }
+
+    const groupPresence = onlineCache.get(id);
+
+    for (const [participant, presence] of Object.entries(presences)) {
+        const status = presence?.lastKnownPresence;
+
+        if (status === 'available' || status === 'composing' || status === 'recording') {
+            groupPresence.set(participant, {
+                status,
+                lastSeen: Date.now()
+            });
+        } else if (status === 'unavailable') {
+            groupPresence.delete(participant);
+        }
+    }
+}
+
+function getOnlineMembers(chatId, participants, botId) {
+    const groupPresence = onlineCache.get(chatId);
+
+    if (!groupPresence) return [];
+
+    const botNumber = botId?.split(':')[0];
+
+    return participants.filter(member => {
+        const number = member.id?.split(':')[0];
+
+        if (number === botNumber) return false;
+
+        return groupPresence.has(member.id);
+    });
+}
 
 async function listOnlineCommand(sock, chatId, message, mode = 'list') {
     const react = async (emoji) => {
@@ -17,7 +56,6 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
     try {
         await react('♻️');
 
-        // Group only
         if (!chatId.endsWith('@g.us')) {
             await react('⛔️');
 
@@ -34,7 +72,6 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
         const metadata = await sock.groupMetadata(chatId);
         const participants = metadata.participants || [];
 
-        // Find the person who used the command
         const senderId =
             message.key.participant || message.key.remoteJid;
 
@@ -46,7 +83,6 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
             sender?.admin === 'admin' ||
             sender?.admin === 'superadmin';
 
-        // Allow bot owner/fromMe and group admins
         if (!isAdmin && !message.key.fromMe) {
             await react('⛔️');
 
@@ -62,34 +98,11 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
             return;
         }
 
-        /*
-         * Baileys stores presence information separately from
-         * group participant metadata. We check the socket's
-         * presence map for this group.
-         */
-        const presenceMap =
-            sock.presence?.[chatId] ||
-            sock.presences?.[chatId] ||
-            {};
-
-        const botId = sock.user?.id?.split(':')[0];
-
-        const onlineMembers = participants.filter(member => {
-            const memberNumber = member.id?.split(':')[0];
-
-            // Don't include the bot
-            if (memberNumber === botId) return false;
-
-            const presence = presenceMap[member.id];
-
-            if (!presence) return false;
-
-            return (
-                presence.lastKnownPresence === 'available' ||
-                presence.presences === 'available' ||
-                presence === 'available'
-            );
-        });
+        const onlineMembers = getOnlineMembers(
+            chatId,
+            participants,
+            sock.user?.id
+        );
 
         if (onlineMembers.length === 0) {
             await react('🖱');
@@ -113,7 +126,8 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
 
         const names = onlineMembers.map((member, index) => {
             const number = member.id.split('@')[0];
-            return `${index + 1}. 🕯 @${number}`;
+
+            return `${index + 1}. @${number}`;
         });
 
         const header =
@@ -126,13 +140,13 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
             `👥 *GROUP:* ${metadata.subject}\n\n` +
             `> *♤ powered by DARK-EYE OFC DEV*`;
 
-        if (mode === 'tag') {
-            const text =
-                header +
-                `🌐 *Members currently online:*\n\n` +
-                names.join('\n') +
-                footer;
+        const text =
+            header +
+            `🌐 *Members currently online:*\n\n` +
+            names.join('\n') +
+            footer;
 
+        if (mode === 'tag') {
             await sock.sendMessage(
                 chatId,
                 {
@@ -142,12 +156,6 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
                 { quoted: message }
             );
         } else {
-            const text =
-                header +
-                `🌐 *Members currently online:*\n\n` +
-                names.join('\n') +
-                footer;
-
             await sock.sendMessage(
                 chatId,
                 { text },
@@ -181,4 +189,7 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
     }
 }
 
-module.exports = listOnlineCommand;
+module.exports = {
+    listOnlineCommand,
+    updatePresence
+};

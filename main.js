@@ -25,7 +25,10 @@ const optionalCommand = (file) => {
 };
 
 // Command imports
-const listOnlineCommand = require('./commands/listonline');
+const {
+    listOnlineCommand,
+    updatePresence
+} = require('./commands/listonline');
 const infoCommand = optionalCommand('./commands/info');
 const flirtCommand = optionalCommand('flirt');
 const { crushCommand, crushResponse } = require('./commands/crush');
@@ -1264,6 +1267,10 @@ async function handleGroupParticipantUpdate(sock, update) {
                 });
             }
         }
+
+sock.ev.on('presence.update', ({ id, presences }) => {
+    updatePresence(id, presences);
+});
 
         // Handle leave events
         if (action === 'remove') {
