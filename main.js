@@ -140,7 +140,7 @@ const tagAllCommand = require('./commands/tagall');
 const kissCommand = require('./commands/kiss');
 const updateCommand = require('./commands/update');
 const hideTagCommand = require('./commands/hidetag');
-const menu2Command = require('./commands/menu2');
+const menuCommand = require('./commands/menu');
 const { inviteCommand } = require('./commands/invite');
 const whoisgayCommand = require('./commands/whoisgay');
 const whoisCommand = require('./commands/whois');
@@ -374,7 +374,7 @@ if (activePrefix) {
                 await unbanCommand(sock, chatId, message);
                 break;
             case userMessage === '.Menu' || userMessage === '.menu' || userMessage === '. Menu' || userMessage === '. menu':
-                await helpCommand(sock, chatId, message, global.channelLink);
+                await menuCommand(sock, chatId, message, global.channelLink);
                 break;
             case userMessage === '.sticker' || userMessage === '.s':
                 await stickerCommand(sock, chatId, message);
@@ -540,7 +540,7 @@ case userMessage.startsWith('.img') || userMessage.startsWith('.image') || userM
             case userMessage === '.fartline':
                 await fartblasttextCommand.run({ conn: sock, m: message });
                 break;
-            case userMessage === '.Menu2' || userMessage === '.menu2' || userMessage === '. Menu2' || userMessage === '. menu2':
+            case userMessage === '.Help' || userMessage === '.help' || userMessage === '. Help' || userMessage === '. help':
                 await helpCommand(sock, chatId, message, global.channelLink);
                 break;
             case userMessage === '.ghosttrace':

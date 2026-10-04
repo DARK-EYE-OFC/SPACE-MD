@@ -1,36 +1,104 @@
-module.exports = {
-  name: "time",
-  alias: ["timezone", "clock"],
-  description: "Check the current time for any country/timezone 🌍",
-  category: "utility",
 
-  async run({ conn, m, args }) {
+const DEFAULT_TIMEZONE = 'Africa/Harare';
+
+async function timeCommand(sock, chatId, message, args = []) {
+    const react = async (emoji) => {
+        try {
+            await sock.sendMessage(chatId, {
+                react: {
+                    text: emoji,
+                    key: message.key
+                }
+            });
+        } catch (error) {
+            console.error('Time reaction error:', error);
+        }
+    };
+
     try {
-      // Must provide timezone
-      if (!args[0]) {
-        return await conn.sendMessage(m.chat, {
-          text: `❗ Usage:\n.time Asia/Kabul\n\n🌍 Example:\n.time Asia/Islamabad\n.time Europe/London\n.time America/New_York\n\n🔰 *SPACE-MD*`
-        }, { quoted: m });
-      }
+        await react('♻️');
 
-      const timezone = args[0];
-      let currentDate;
+        const timezone = args[0] || DEFAULT_TIMEZONE;
 
-      try {
-        currentDate = new Date().toLocaleString("en-GB", { timeZone: timezone });
-      } catch (error) {
-        return await conn.sendMessage(m.chat, {
-          text: `❌ Invalid timezone!\n\n✅ Example:\n.time Asia/Kabul\n.time Asia/Islamabad\n\n🌍 Find valid timezones here: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones\n\n🔰 *SPACE-MD TIME SYSTEM*`
-        }, { quoted: m });
-      }
+        let currentDate;
 
-      await conn.sendMessage(m.chat, {
-        text: `🕒 *Current Time in ${timezone}*\n\n📅 Date & Time: ${currentDate}\n\n🔰 *SPACE-MD TIME SYSTEM*`
-      }, { quoted: m });
+        try {
+            currentDate = new Date().toLocaleString('en-GB', {
+                timeZone: timezone,
+                dateStyle: 'full',
+                timeStyle: 'medium'
+            });
+        } catch (error) {
+            await react('❌️');
 
-    } catch (err) {
-      console.error("❌ Time command error:", err);
-      await conn.sendMessage(m.chat, { text: "❌ Something went wrong while fetching time.\n🔰 *SPACE-MD TIME SYSTEM*" }, { quoted: m });
+            await sock.sendMessage(
+                chatId,
+                {
+                    text:
+                        `❌️ *Invalid timezone!*\n\n` +
+                        `🌍 *Example:*\n` +
+                        `.time Africa/Harare\n` +
+                        `.time Asia/Kabul\n` +
+                        `.time Europe/London\n` +
+                        `.time America/New_York\n\n` +
+                        `🔎 Find valid timezones:\n` +
+                        `https://en.wikipedia.org/wiki/List_of_tz_database_time_zones\n\n` +
+                        `🚀 *SPACE-MD TIME SYSTEM*`
+                },
+                { quoted: message }
+            );
+
+            return;
+        }
+
+        const caption =
+            `╔═══❖•ೋ° °ೋ•❖═══╗\n` +
+            `        🇿🇼 *𝐒𝐏𝐀𝐂𝐄-𝐌𝐃* 🇿🇼\n` +
+            `╚═══❖•ೋ° °ೋ•❖═══╝\n\n` +
+
+            `╭━━━━❒ ⌚️ 𝐓𝐈𝐌𝐄 ❒━━━━╮\n` +
+            `┃\n` +
+            `┃ 🌍 *TIMEZONE:* ${timezone}\n` +
+            `┃\n` +
+            `┃ 📅 *DATE & TIME:*\n` +
+            `┃ ${currentDate}\n` +
+            `┃\n` +
+            `╰━━━━━━━━━━━━━━━━━━╯\n\n` +
+
+            `> *♤powered by DARK-EYE OFC DEV*`;
+
+        await sock.sendMessage(
+            chatId,
+            {
+                text: caption
+            },
+            { quoted: message }
+        );
+
+        await react('⌚️');
+
+    } catch (error) {
+        console.error('❌ Time command error:', error);
+
+        await react('❌️');
+
+        try {
+            await sock.sendMessage(
+                chatId,
+                {
+                    text:
+                        `❌️ *Something went wrong while fetching the time.*\n\n` +
+                        `🚀 *SPACE-MD TIME SYSTEM*`
+                },
+                { quoted: message }
+            );
+        } catch (sendError) {
+            console.error(
+                'Time error message failed:',
+                sendError
+            );
+        }
     }
-  }
-};
+}
+
+module.exports = timeCommand;

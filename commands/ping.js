@@ -1,45 +1,104 @@
+
 const settings = require('../settings.js');
 
 function formatTime(seconds) {
     const days = Math.floor(seconds / (24 * 60 * 60));
     seconds %= (24 * 60 * 60);
+
     const hours = Math.floor(seconds / 3600);
     seconds %= 3600;
+
     const minutes = Math.floor(seconds / 60);
     seconds = Math.floor(seconds % 60);
 
     let time = '';
+
     if (days > 0) time += `${days}d `;
     if (hours > 0) time += `${hours}h `;
     if (minutes > 0) time += `${minutes}m `;
-    if (seconds > 0 || time === '') time += `${seconds}s`;
+
+    if (seconds > 0 || time === '') {
+        time += `${seconds}s`;
+    }
+
     return time.trim();
 }
 
 async function pingCommand(sock, chatId, message) {
+    const react = async (emoji) => {
+        try {
+            await sock.sendMessage(chatId, {
+                react: {
+                    text: emoji,
+                    key: message.key
+                }
+            });
+        } catch (error) {
+            console.error('Ping reaction error:', error);
+        }
+    };
+
     try {
+        // Loading reaction
+        await react('♻️');
+
+        // Send initial ping message
         const start = Date.now();
-        await sock.sendMessage(chatId, { text: '🏓 Pinging...' }, { quoted: message });
-        const end = Date.now();
 
-        const ping = Math.round((end - start) / 2);
-        const uptime = formatTime(process.uptime());
+        const sentMessage = await sock.sendMessage(
+            chatId,
+            {
+                text: '♻️ *Pinging...*'
+            },
+            {
+                quoted: message
+            }
+        );
 
-        const replyText = 
-`╔═══❖•ೋ° °ೋ•❖═══╗
- *SPACE-MD*
-╚═══❖•ೋ° °ೋ•❖═══╝
+        // Calculate response latency
+        const latency = Date.now() - start;
 
-⚡ *Ping:* ${ping}ms
-⏳ *Uptime:* ${uptime}
-🌐 *Mode:* ${settings.mode || 'Public'}
+        // Simple bot speed measurement
+        const botSpeed = Math.max(1, latency);
 
-💎 *Always alive & ready to serve you!*`;
+        const finalText =
+            `╔═══❖•ೋ° °ೋ•❖═══╗\n` +
+            `      🏓 *PONG* 🇿🇼\n` +
+            `╚═══❖•ೋ° °ೋ•❖═══╝\n\n` +
+            `📈 *SPEED:* _${botSpeed}ms_\n` +
+            `🖥 *LATENCY:* _${latency}ms_\n\n` +
+            `> *♤powered by DARK-EYE OFC DEV*`;
 
-        await sock.sendMessage(chatId, { text: replyText, quoted: message });
-    } catch (err) {
-        console.error('Ping error:', err);
-        await sock.sendMessage(chatId, { text: '💀 SPACE-MD crashed while pinging!' });
+        // Edit the original "Pinging..." message
+        await sock.sendMessage(chatId, {
+            text: finalText,
+            edit: sentMessage.key
+        });
+
+        // Done reaction
+        await react('🏓');
+
+    } catch (error) {
+        console.error('Ping error:', error);
+
+        // Failed reaction
+        await react('❌️');
+
+        try {
+            await sock.sendMessage(
+                chatId,
+                {
+                    text:
+                        `❌️ *Ping failed.*\n\n` +
+                        `🚀 *SPACE-MD*`
+                },
+                {
+                    quoted: message
+                }
+            );
+        } catch (sendError) {
+            console.error('Ping error message failed:', sendError);
+        }
     }
 }
 

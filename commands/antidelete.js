@@ -749,7 +749,7 @@ async function handleAntideleteCommand(
                 sock,
                 chatId,
                 message,
-                '❌️'
+                '🚯'
             );
 
             await sock.sendMessage(
@@ -771,7 +771,7 @@ async function handleAntideleteCommand(
             sock,
             chatId,
             message,
-            '❌️'
+            '⛔️'
         );
 
         await sock.sendMessage(

@@ -1,339 +1,198 @@
-
 const settings = require('../settings');
 const fs = require('fs');
 const path = require('path');
-const { getSettings } = require('../lib/sessionSettings');
 
-const commandCategories = {
-    ai: [
-        'ai',
-        'chatbot',
-        'imagine',
-        'translate',
-        'tts',
-        'news',
-        'weather',
-        'time'
-    ],
-
-    download: [
-        'gif',
-        'github',
-        'img',
-        'lyrics',
-        'meme',
-        'play',
-        'song',
-        'ss',
-        'stickertelegram',
-        'tiktok',
-        'url',
-        'video'
-    ],
-
-    fun: [
-        'character',
-        'eightball',
-        'fact',
-        'ghost',
-        'ghosttrace',
-        'hack',
-        'hornycheck',
-        'insult',
-        'joke',
-        'kiss',
-        'lovecheck',
-        'marry',
-        'mindread',
-        'pregnancycheck',
-        'pussylover',
-        'quote',
-        'roseday',
-        'shayari',
-        'ship',
-        'simp',
-        'stupid',
-        'take',
-        'toilet',
-        'whoisgay',
-        'wasted'
-    ],
-
-    games: [
-        'hangman',
-        'tictactoe',
-        'trivia',
-        'truth',
-        'dare'
-    ],
-
-    general: [
-        'alive',
-        'clear',
-        'goodbye',
-        'groupinfo',
-        'help',
-        'owner',
-        'ping',
-        'support',
-        'whois'
-    ],
-
-    group: [
-        'antibadword',
-        'antidelete',
-        'antilink',
-        'delete',
-        'demote',
-        'grouplink',
-        'hidetag',
-        'invite',
-        'kick',
-        'mute',
-        'promote',
-        'tag',
-        'tagall',
-        'unban',
-        'unmute',
-        'warn',
-        'warnings',
-        'welcome'
-    ],
-
-    owner: [
-        'autostatus',
-        'ban',
-        'clearsession',
-        'deletebot',
-        'pmblocker',
-        'setpp',
-        'sudo',
-        'unhack',
-        'update',
-        'viewonce'
-    ],
-
-    settings: [
-        'prefix',
-        'setprefix',
-        'settings',
-        'resetlink'
-    ],
-
-    system: [
-        'pair',
-        'spy',
-        'sticker',
-        'sticker-alt',
-        'simage-alt',
-        'textmaker',
-        'virus',
-        'fartblasttext',
-        'explode',
-        'bedskills',
-        'brainwash',
-        'callmom',
-        'compliment',
-        'crush',
-        'detect',
-        'emojimix',
-        'facebook',
-        'flirt',
-        'flirt2',
-        'getpp',
-        'goodnight',
-        'auntyalert',
-        'attp',
-        'shafi',
-        'staff',
-        'mirror',
-        'topmembers'
-    ]
-};
-
-function formatUptime(seconds) {
-    seconds = Math.floor(seconds);
-
-    const days = Math.floor(seconds / 86400);
-    seconds %= 86400;
-
-    const hours = Math.floor(seconds / 3600);
-    seconds %= 3600;
-
+function formatTime(seconds) {
+    const days = Math.floor(seconds / (24 * 60 * 60));
+    seconds %= (24 * 60 * 60);
+    const hours = Math.floor(seconds / (60 * 60));
+    seconds %= (60 * 60);
     const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
+    seconds = Math.floor(seconds % 60);
 
-    return `${days}D - ${hours}H - ${minutes}M - ${secs}S`;
-}
+    let time = '';
+    if (days > 0) time += `${days}d `;
+    if (hours > 0) time += `${hours}h `;
+    if (minutes > 0) time += `${minutes}m `;
+    if (seconds > 0 || time === '') time += `${seconds}s`;
 
-function getMemoryUsage() {
-    const memory = process.memoryUsage().rss / 1024 / 1024;
-    return `${memory.toFixed(1)} MB`;
-}
-
-function getCommandCount() {
-    return Object.values(commandCategories)
-        .reduce((total, commands) => total + commands.length, 0);
-}
-
-function formatCommands(commands) {
-    return commands
-        .map((command, index) =>
-            `┃╋━➤ .${command}`
-        )
-        .join('\n');
-}
-
-function categoryBlock(title, emoji, commands) {
-    return (
-        `╭───❒ *${emoji}${title}* ❒▪︎▪︎\n` +
-        `┃🔢 *${commands.length} COMMANDS*\n` +
-        `┃\n` +
-        `${formatCommands(commands)}\n` +
-        `╰───────────────❒`
-    );
+    return time.trim();
 }
 
 async function helpCommand(sock, chatId, message) {
+    const start = Date.now();
+    await sock.sendMessage(chatId, { text: '⏳ *Loading sweet SPACE-MD menu...* ♻️' }, { quoted: message });
+    const end = Date.now();
+    const ping = Math.round((end - start) / 2);
+    const uptimeFormatted = formatTime(process.uptime());
+
+    const helpMessage = `
+┏━━━━━━━━━━━━━━━━━━┓
+┃💻Commands Menu💻
+┗━━━━━━━━━━━━━━━━━━┛
+ 📝 _Owner Information_
+  ━━━━━━━━━━━━━━━━━━
+📍 *Owner:* ${settings.botOwner}
+⏳ *Uptime:* ${uptimeFormatted}
+🕐 *Time:* ${new Date().toLocaleString()}
+⚡ *Speed:* ${ping}
+
+✨ *OWNER COMMANDS* ✨
+┏━━━━━━━━━━━━━┓
+┃ 🔴 .ban | 🔵 .unban
+┃ ✅️ .sudo | ❌️ .delsudo 
+┃ 👑 .promote | 👥 .demote
+┃ 👋 .kick | 🗑️ .delete
+┃ 🚫 .antilink | 🚫 .antibadword
+┃ 👥 .tag | 👥 .tagall
+┃ 🤖 .chatbot | 🔗 .resetlink
+┃ 👋 .welcome | 👋 .goodbye
+┗━━━━━━━━━━━━━┛
+
+🌍 *GENERAL COMMANDS* 🌍
+┏━━━━━━━━━━━━━┓
+┃ 📜 .menu | 📶 .ping
+┃ ⏱️ .runtime | 👑 .owner
+┃ 😂 .joke | 💬 .quote
+┃ 🧠 .fact | 🌦️ .weather
+┃ 📰 .news | 💌 .attp
+┃ 🎵 .lyrics | 🎱 .8ball
+┃ ℹ️ .groupinfo | 👮 .admins
+┃ 🔍 .jid | 📸 .ss
+┃ 🌍 .trt | 📞 .vv
+┗━━━━━━━━━━━━━┛
+
+⚙️ *SETTINGS* ⚙️
+┏━━━━━━━━━━━━━┓
+┃ 🌐 .public | 🔐 .private
+┃ 🟢 .autostatus | 📖 .autoread
+┃ 🧹 .clearsession | 🛡️ .antidelete
+┃ 💬 .autoreact | 🖼️ .getpp
+┃ 📸 .setpp | 📜 .autobio
+┃ ⌨️ .autotyping | 🎙️ .autorecording
+┗━━━━━━━━━━━━━┛
+
+🎨 *STICKERS* 🎨
+┏━━━━━━━━━━━━━┓
+┃ 🌀 .blur | 🖼️ .simage
+┃ 🌟 .sticker | 🐯 .tgsticker
+┃ 🤣 .meme | 🎯 .take
+┃ 🔀 .emojimix
+┗━━━━━━━━━━━━━┛
+┏━━━━━━━━━━━━━┓
+┃ 🎶 DOWNLOAD COMMANDS
+┃
+┃ ▶️ .play <song> 
+┃ 🎥 .video <name|url>
+┃ 🎵 .song <name>
+┃ 📥 .ytmp3 <url>
+┃ 📥 .ytmp4 <url>
+┃ ▶️ .fb <url>
+┣━━━━━━━━━━━━━┫
+┃ 🔴 .ban | 🔵 .unban
+┃ 👑 .promote | 👥 .demote
+┃ 👋 .kick | 🗑️ .delete
+┃ 🚫 .antilink | 🚫 .antibadword
+┃ 👥 .tag | 👥 .tagall
+┃ 🤖 .chatbot | 🔗 .resetlink
+┃ 👋 .welcome | 👋 .goodbye
+┃ 🛡️ .sudo | ❌ .delsudo
+┗━━━━━━━━━━━━━┛
+
+
+🎮 *GAMES* 🎮
+┏━━━━━━━━━━━━━┓
+┃ ❌⭕ .tictactoe | 🎯 .hangman
+┃ ❓ .guess | 🧠 .trivia
+┃ ✍️ .answer | 🤐 .truth
+┃ 😈 .dare
+┗━━━━━━━━━━━━━┛
+
+🤖 *AI & SEARCH* 🤖
+┏━━━━━━━━━━━━━┓
+┃ 🤖 .gpt | 💡 .gptgo
+┃ 🧬 .gemini | 🧠 .flux
+┃ 🎨 .imagine
+┗━━━━━━━━━━━━━┛
+
+🎭 *FUN ZONE* 🎭
+┏━━━━━━━━━━━━━┓
+┃ 💘 .compliment | 😡 .insult
+┃ 😍 .flirt | 💋 .kiss
+┃ 📜 .shayari | 🌙 .goodnight
+┃ 🌹 .roseday | 🎭 .character
+┃ ☠️ .wasted | 🚢 .ship
+┃ 😈 .simp | 🤪 .stupid
+┃ 🧠 .brainwash | 🐔 .detect
+┃ 👻 .ghost | 🧠 .mindread
+┃ 💩 .toilet | 📞 .callmom
+┃ 💘 .crush | 🪞 .mirror
+┃ 💣 .explode | 🕵️ .spy
+┃ 💨 .bombgas | 🛏️ .bedrate
+┃ 🤰 .pregnancycheck | 💘 .lovecheck
+┃ 🌈 .gaycheck | 🔥 .hornycheck
+┃ 👑 .shafi
+┗━━━━━━━━━━━━━┛
+
+🧰 *MAKER* 🧰
+┏━━━━━━━━━━━━━┓
+┃ 🔥 .fire | ⚡ .thunder
+┃ ❄️ .ice | 🌫️ .snow
+┃ 👹 .devil | 💜 .purple
+┃ 💡 .light
+┗━━━━━━━━━━━━━┛
+
+🚀 *SYSTEM* 🚀
+┏━━━━━━━━━━━━━┓
+┃ 🔄 .update 
+┗━━━━━━━━━━━━━┛
+`;
+
     try {
-        const sessionSettings = getSettings(sock);
+        const imagePath = path.join(__dirname, '../assets/pathan_img.jpg');
+        const audioPath = path.join(__dirname, '../assets/menu.mp3');
+        const audio3Path = path.join(__dirname, '../assets/audio3.mp3');
 
-        const prefix =
-            sessionSettings.prefix === null ||
-            sessionSettings.prefix === '' ||
-            sessionSettings.prefix === false
-                ? 'NONE'
-                : sessionSettings.prefix;
-
-        const totalCommands = getCommandCount();
-
-        const panel =
-            process.env.RENDER_EXTERNAL_URL ||
-            'Termux / PM2';
-
-        const helpMessage =
-            `╔═══❖•ೋ° °ೋ•❖═══╗\n` +
-            `           🔵 *𝐒𝐏𝐀𝐂𝐄-𝐌𝐃* 🇿🇼\n` +
-            `╚═══❖•ೋ° °ೋ•❖═══╝\n\n` +
-
-            `╭━━━━❒ 𝐌𝐄𝐍𝐔 ❒━━━━━╮\n` +
-            `┃ 💠 *BOT NAME:* ${settings.botName || '🚀 SPACE-MD'}\n` +
-            `┃ ✒️ *PREFIX:* [${prefix}]\n` +
-            `┃ 🪧 *VERSION:* ${settings.version || '5.6.9'}\n` +
-            `┃ 👑 *OWNER:* ${settings.botOwner || 'DARK-EYE-OFC'}\n` +
-            `┃ ⏳️ *RUNTIME:* ${formatUptime(process.uptime())}\n` +
-            `┃ 🏷 *COMMANDS:* ${totalCommands}\n` +
-            `┃ 📡 *PANEL:* ${panel}\n` +
-            `┃ 💾 *MEMORY:* ${getMemoryUsage()}\n` +
-            `┃ 📺 *YOUTUBE:* ${global.ytch || 'Not set'}\n` +
-            `┃ 📊 *UPTIME:* ${formatUptime(process.uptime())}\n` +
-            `╰━━━━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('AI CMDS', '🔬', commandCategories.ai)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('DOWNLOAD', '⬇️', commandCategories.download)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('FUN CMDS', '🥳', commandCategories.fun)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('GAMES', '🎮', commandCategories.games)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('GENERAL', '🖥', commandCategories.general)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('GROUP', '🫂', commandCategories.group)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('OWNER', '🔐', commandCategories.owner)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('SETTINGS', '⚙️', commandCategories.settings)}\n\n` +
-            `❒━━━━━━━━━━━━━❒\n\n` +
-
-            `${categoryBlock('SYSTEM', '📟', commandCategories.system)}\n\n` +
-
-            `━━━━━━━━━━━━━\n` +
-            `> *♤powered by DARK-EYE OFC DEV*\n\n` +
-            `_*📢 Join our channel for updates*_`;
-
-        // Primary menu image
-        let imagePath = path.join(
-            __dirname,
-            '../assets/bot_image.jpg'
-        );
-
-        // Fallback for the older filename
-        if (!fs.existsSync(imagePath)) {
-            const fallbackPath = path.join(
-                __dirname,
-                '../assets/bot_image_jpg'
-            );
-
-            if (fs.existsSync(fallbackPath)) {
-                imagePath = fallbackPath;
-            }
-        }
-
-        if (!fs.existsSync(imagePath)) {
-            console.error(
-                '❌ Menu image not found:',
-                imagePath
-            );
-
-            await sock.sendMessage(
-                chatId,
-                {
-                    text: helpMessage
-                },
-                { quoted: message }
-            );
-
-            return;
-        }
-
-        await sock.sendMessage(
-            chatId,
-            {
-                image: fs.readFileSync(imagePath),
+        if (fs.existsSync(imagePath)) {
+            const imageBuffer = fs.readFileSync(imagePath);
+            await sock.sendMessage(chatId, {
+                image: imageBuffer,
                 caption: helpMessage,
                 contextInfo: {
                     forwardingScore: 1,
-                    isForwarded: true,
+                    isForwarded: false,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid:
-                            '120363420933039839@newsletter',
-                        newsletterName:
-                            'SPACE-MD',
+                        newsletterJid: '120363420933039839@newsletter',
+                        newsletterName: settings.botName,
                         serverMessageId: -1
                     }
                 }
-            },
-            {
-                quoted: message
+            }, { quoted: message });
+
+            if (fs.existsSync(audioPath)) {
+                const audioBuffer = fs.readFileSync(audioPath);
+                await sock.sendMessage(chatId, {
+                    audio: audioBuffer,
+                    mimetype: 'audio/mp4',
+                    ptt: true
+                }, { quoted: message });
             }
-        );
 
+            if (fs.existsSync(audio3Path)) {
+                const audio3Buffer = fs.readFileSync(audio3Path);
+                await sock.sendMessage(chatId, {
+                    audio: audio3Buffer,
+                    mimetype: 'audio/mp4',
+                    ptt: true
+                }, { quoted: message });
+            }
+
+        } else {
+            await sock.sendMessage(chatId, { text: helpMessage });
+        }
     } catch (error) {
-        console.error(
-            '❌ Error in help command:',
-            error
-        );
-
-        try {
-            await sock.sendMessage(
-                chatId,
-                {
-                    text:
-                        '❌ Failed to send the menu.'
-                },
-                {
-                    quoted: message
-                }
-            );
-        } catch {}
+        console.error('Error in help command:', error);
+        await sock.sendMessage(chatId, { text: helpMessage });
     }
 }
 

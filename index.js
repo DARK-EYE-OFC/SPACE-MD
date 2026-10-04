@@ -162,8 +162,16 @@ async function startXeonBotInc() {
                 await handleStatus(XeonBotInc, chatUpdate);
                 return;
             }
-            if (!XeonBotInc.public && !mek.key.fromMe && chatUpdate.type === 'notify') return
-            if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
+           
+// Ignore anything that is not a live incoming message.
+// This prevents WhatsApp history synchronization from replaying old commands.
+if (chatUpdate.type !== 'notify') return
+
+if (!XeonBotInc.public && !mek.key.fromMe) return
+
+if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
+
+// Clear message retry cache to prevent memory bloat
 
             // Clear message retry cache to prevent memory bloat
             if (XeonBotInc?.msgRetryCounterCache) {
