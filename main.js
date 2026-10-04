@@ -69,7 +69,7 @@ const { tictactoeCommand, handleTicTacToeMove } = require('./commands/tictactoe'
 const { incrementMessageCount, topMembers } = require('./commands/topmembers');
 const ownerCommand = require('./commands/owner');
 const deleteCommand = require('./commands/delete');
-const { handleAntilinkCommand, handleLinkDetection } = optionalCommand('antilink');
+const { antilinkCommand, handleAntilinkMessage } = require('./commands/antilink');
 const { Antilink } = require('./lib/antilink');
 const memeCommand = require('./commands/meme');
 const tagCommand = require('./commands/tag');
@@ -207,6 +207,7 @@ const rawText =
     message.message?.videoMessage?.caption?.trim() ||
     '';
 
+await handleAntilinkMessage(sock, chatId, message, rawText);
 const sessionSettings = getSettings(sock);
 const activePrefix = sessionSettings.prefix;
 
@@ -373,6 +374,11 @@ if (activePrefix) {
             case userMessage.startsWith('.unban'):
                 await unbanCommand(sock, chatId, message);
                 break;
+            case userMessage.startsWith('.antilink'): {
+                const antilinkArgs = userMessage.split(/\s+/).slice(1);
+                await antilinkCommand(sock, chatId, message, antilinkArgs);
+                break;
+            }
             case userMessage === '.Menu' || userMessage === '.menu' || userMessage === '. Menu' || userMessage === '. menu':
                 await menuCommand(sock, chatId, message, global.channelLink);
                 break;
