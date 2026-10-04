@@ -25,8 +25,10 @@ const optionalCommand = (file) => {
 };
 
 // Command imports
+const listOnlineCommand = require('./commands/listonline');
 const infoCommand = optionalCommand('./commands/info');
 const flirtCommand = optionalCommand('flirt');
+const { crushCommand, crushResponse } = require('./commands/crush');
 const flirt2Command = optionalCommand('flirt2');
 const ghosttrace = require('./commands/ghosttrace');
 const deleteBotCommand = optionalCommand('deletebot');
@@ -45,7 +47,6 @@ const ghostCommand = require('./commands/ghost');
 const mindreadCommand = require('./commands/mindread');
 const toiletCommand = require('./commands/toilet');
 const callmomCommand = optionalCommand('callmom');
-const crushCommand = optionalCommand('crush');
 const mirrorCommand = require('./commands/mirror');
 const auntyalertCommand = optionalCommand('auntyalert');
 const explodeCommand = optionalCommand('explode');
@@ -73,6 +74,7 @@ const { antilinkCommand, handleAntilinkMessage } = require('./commands/antilink'
 const { Antilink } = require('./lib/antilink');
 const memeCommand = require('./commands/meme');
 const tagCommand = require('./commands/tag');
+const tag2Command = require('./commands/tag2');
 const jokeCommand = require('./commands/joke');
 const quoteCommand = require('./commands/quote');
 const factCommand = require('./commands/fact');
@@ -350,6 +352,22 @@ if (activePrefix) {
                 }
                 break;
             }
+            case userMessage === '.tag': {
+    const tagArgs = userMessage.split(/\s+/).slice(1);
+    await tag2Command(sock, chatId, message, tagArgs);
+    break;
+}
+case userMessage === '.listonline':
+    await listOnlineCommand(sock, chatId, message, 'list');
+    break;
+
+case userMessage === '.tagonline':
+    await listOnlineCommand(sock, chatId, message, 'tag');
+    break;
+case userMessage === '.crush': {
+    await crushCommand(sock, chatId, message);
+    break;
+}
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await kickCommand(sock, chatId, senderId, mentionedJidListKick, message);
@@ -1137,6 +1155,20 @@ if (userMessage.startsWith('.')) {
             key: message.key
         }
     });
+}
+
+// Handle SPACE-MD crush button responses
+const buttonResponse =
+    message.message?.buttonsResponseMessage?.selectedButtonId;
+
+if (buttonResponse === 'crush_yes' || buttonResponse === 'crush_no') {
+    await crushResponse(
+        sock,
+        chatId,
+        message,
+        buttonResponse
+    );
+    return;
 }
 
        // Handle non-command group messages
