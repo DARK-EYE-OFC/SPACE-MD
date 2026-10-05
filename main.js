@@ -507,7 +507,7 @@ case userMessage === '.group-link':
                 }
                 break;
                 case userMessage.startsWith('.time'):
-  await timeCommand.run({ conn: sock, m: message, args: userMessage.split(' ').slice(1) });
+ await timeCommand(sock, chatId, message, userMessage.split(' ').slice(1));;
   break;
             case userMessage.startsWith('.tag'):
                 const messageText = rawText.slice(4).trim();  // use rawText here, not userMessage

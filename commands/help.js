@@ -39,14 +39,22 @@ async function helpCommand(sock, chatId, message) {
 
 ✨ *OWNER COMMANDS* ✨
 ┏━━━━━━━━━━━━━┓
-┃ 🔴 .ban | 🔵 .unban
-┃ ✅️ .sudo | ❌️ .delsudo 
-┃ 👑 .promote | 👥 .demote
-┃ 👋 .kick | 🗑️ .delete
-┃ 🚫 .antilink | 🚫 .antibadword
-┃ 👥 .tag | 👥 .tagall
-┃ 🤖 .chatbot | 🔗 .resetlink
-┃ 👋 .welcome | 👋 .goodbye
+┃ 🔴 .ban 
+| 🔵 .unban
+┃ ✅️ .sudo 
+| ❌️ .delsudo 
+┃ 👑 .promote 
+| 👥 .demote
+┃ 👋 .kick 
+| 🗑️ .delete
+┃ 🚫 .antilink 
+| 🚫 .antibadword
+┃ 👥 .tag 
+| 👥 .tagall
+┃ 🤖 .chatbot 
+| 🔗 .resetlink
+┃ 👋 .welcome 
+| 👋 .goodbye
 ┗━━━━━━━━━━━━━┛
 
 🌍 *GENERAL COMMANDS* 🌍

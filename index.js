@@ -190,7 +190,7 @@ if (mek.key.id.startsWith('BAE5') && mek.key.id.length === 16) return
                             forwardingScore: 1,
                             isForwarded: true,
                             forwardedNewsletterMessageInfo: {
-                                newsletterJid: '120363348739987203@newsletter',
+                                newsletterJid: '120363420933039839@newsletter',
                                 newsletterName: 'SPACE-MD',
                                 serverMessageId: -1
                             }
@@ -267,11 +267,11 @@ phoneNumber = requestedPhoneNumber
         phoneNumber = phoneNumber.replace(/[^0-9]/g, '')
 
         // Validate the phone number using awesome-phonenumber
-        const pn = require('awesome-phonenumber');
-        if (!pn('+' + phoneNumber).isValid()) {
-            console.log(chalk.red('Invalid phone number. Please enter your full international number, e.g. 26377XXXXXXX, without + or spaces.'));
-            process.exit(1);
-        }
+const pn = require('awesome-phonenumber');
+
+if (!pn('+' + phoneNumber).isPossible()) {
+    console.log(chalk.yellow('⚠️ Phone number could not be verified by awesome-phonenumber. Continuing with WhatsApp pairing...'));
+}
 
         setTimeout(async () => {
             try {
@@ -301,7 +301,7 @@ phoneNumber = requestedPhoneNumber
                     forwardingScore: 1,
                     isForwarded: true,
                     forwardedNewsletterMessageInfo: {
-                        newsletterJid: '120363348739987203@newsletter',
+                        newsletterJid: '120363420933039839@newsletter',
                         newsletterName: 'SPACE-MD',
                         serverMessageId: -1
                     }
