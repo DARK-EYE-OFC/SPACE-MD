@@ -1269,9 +1269,6 @@ async function handleGroupParticipantUpdate(sock, update) {
             }
         }
 
-sock.ev.on('presence.update', ({ id, presences }) => {
-    updatePresence(id, presences);
-});
 
         // Handle leave events
         if (action === 'remove') {

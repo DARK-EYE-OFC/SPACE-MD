@@ -1,4 +1,20 @@
- const onlineCache = new Map();
+const onlineCache = new Map();
+
+async function subscribeToGroupPresence(sock, chatId, participants) {
+    if (!chatId?.endsWith('@g.us')) return;
+
+    for (const participant of participants) {
+        const jid = participant.id;
+
+        if (!jid) continue;
+
+        try {
+            await sock.presenceSubscribe(jid);
+        } catch (error) {
+            // Ignore individual subscription failures
+        }
+    }
+}
 
 function updatePresence(id, presences) {
     if (!id || !presences) return;
@@ -28,15 +44,25 @@ function getOnlineMembers(chatId, participants, botId) {
 
     if (!groupPresence) return [];
 
-    const botNumber = botId?.split(':')[0];
+const botNumber = botId?.split(':')[0];
 
-    return participants.filter(member => {
-        const number = member.id?.split(':')[0];
+return participants.filter(member => {
+    const memberNumber = member.id?.split(':')[0];
 
-        if (number === botNumber) return false;
+    if (!memberNumber || memberNumber === botNumber) {
+        return false;
+    }
 
-        return groupPresence.has(member.id);
-    });
+    for (const storedJid of groupPresence.keys()) {
+        const storedNumber = storedJid?.split(':')[0];
+
+        if (storedNumber === memberNumber) {
+            return true;
+        }
+    }
+
+    return false;
+});
 }
 
 async function listOnlineCommand(sock, chatId, message, mode = 'list') {
@@ -71,7 +97,11 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
 
         const metadata = await sock.groupMetadata(chatId);
         const participants = metadata.participants || [];
-
+        await subscribeToGroupPresence(
+    sock,
+    chatId,
+    participants
+);
         const senderId =
             message.key.participant || message.key.remoteJid;
 

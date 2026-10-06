@@ -17,7 +17,13 @@ const chalk = require('chalk')
 const FileType = require('file-type')
 const path = require('path')
 const axios = require('axios')
-const { handleMessages, handleGroupParticipantUpdate, handleStatus } = require('./main');
+const {
+    handleMessages,
+    handleGroupParticipantUpdate,
+    handleStatus
+} = require('./main');
+
+const { updatePresence } = require('./commands/listonline');
 const PhoneNumber = require('awesome-phonenumber')
 const { imageToWebp, videoToWebp, writeExifImg, writeExifVid } = require('./lib/exif')
 const { smsg, isUrl, generateMessageTag, getBuffer, getSizeMedia, fetch, await, sleep, reSize } = require('./lib/myfunc')
@@ -151,6 +157,10 @@ async function startXeonBotInc() {
     })
 
     store.bind(XeonBotInc.ev)
+
+XeonBotInc.ev.on('presence.update', ({ id, presences }) => {
+    updatePresence(id, presences);
+});
 
     // Message handling
     XeonBotInc.ev.on('messages.upsert', async chatUpdate => {
