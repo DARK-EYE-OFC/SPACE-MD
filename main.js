@@ -142,6 +142,7 @@ const sudoCommand = require('./commands/sudo');
 const shafiCommand = require('./commands/shafi');
 
 const tagAllCommand = require('./commands/tagall');
+const jidCommand = require('./commands/jid');
 const kissCommand = require('./commands/kiss');
 const updateCommand = require('./commands/update');
 const hideTagCommand = require('./commands/hidetag');
@@ -506,6 +507,9 @@ case userMessage === '.group-link':
                     await sock.sendMessage(chatId, { text: 'Sorry, only group admins can use the .tagall command.', ...channelInfo }, {quoted: message});
                 }
                 break;
+                case userMessage === '.jid':
+    await jidCommand(sock, chatId, message, args);
+    break;
                 case userMessage.startsWith('.time'):
  await timeCommand(sock, chatId, message, userMessage.split(' ').slice(1));;
   break;
@@ -1106,9 +1110,6 @@ case userMessage.startsWith('.gemini'):
                 break;
             case userMessage.startsWith('.imagine') || userMessage.startsWith('.flux') || userMessage.startsWith('.dalle'):
                 await imagineCommand(sock, chatId, message);
-                break;
-            case userMessage === '.jid':
-                await groupJidCommand(sock, chatId, message);
                 break;
 
                 // Function to handle .groupjid command
