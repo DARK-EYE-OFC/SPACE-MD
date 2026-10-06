@@ -951,7 +951,7 @@ async function helpCommand(sock, chatId, message) {
                 {
                     audio: fs.readFileSync(audioPath),
                     mimetype: 'audio/mpeg',
-                    ptt: true
+                    ptt: false
                 }
             );
         } else {
