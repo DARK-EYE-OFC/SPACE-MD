@@ -800,6 +800,24 @@ function categoryBlock(title, emoji, commands) {
 
 async function helpCommand(sock, chatId, message) {
     try {
+        // ♻️ Menu loading
+        await sock.sendMessage(chatId, {
+            react: {
+                text: '📜',
+                key: message.key
+            }
+        });
+
+        await sock.sendMessage(
+            chatId,
+            {
+                text: '> _*[📜 SPACE-MD 🇿🇼] please wait, bot menu is loading...*_'
+            },
+            {
+                quoted: message
+            }
+        );
+
         const sessionSettings = getSettings(sock);
 
         const prefix =
@@ -919,6 +937,29 @@ async function helpCommand(sock, chatId, message) {
                 quoted: message
             }
         );
+
+        // Send menu audio as a voice note
+        const audioPath = path.join(
+            process.cwd(),
+            'assets',
+            'menu_audio.mp3'
+        );
+
+        if (fs.existsSync(audioPath)) {
+            await sock.sendMessage(
+                chatId,
+                {
+                    audio: fs.readFileSync(audioPath),
+                    mimetype: 'audio/mpeg',
+                    ptt: true
+                }
+            );
+        } else {
+            console.warn(
+                '⚠️ Menu audio not found:',
+                audioPath
+            );
+        }
 
     } catch (error) {
         console.error(
