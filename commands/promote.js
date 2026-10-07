@@ -79,7 +79,7 @@ ${promotedUsernames.map(name => `✨ ${name}`).join('\n')}
 🗓️ On: ${new Date().toLocaleString()}
 
 📢 Congrats, you’re now an admin! 
-Welcome to the *Dark Side* – we have commands. 😈`;
+Welcome to the * ${groupName}* – we have commands. 😈`;
 
         await sock.sendMessage(groupId, {
             text: promotionMessage,

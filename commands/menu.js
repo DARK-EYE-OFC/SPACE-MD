@@ -843,7 +843,7 @@ async function helpCommand(sock, chatId, message) {
             `┃ ✒️ *PREFIX:* [${prefix}]\n` +
             `┃ 🪧 *VERSION:* ${settings.version || '5.6.9'}\n` +
             `┃ 👑 *OWNER:* ${settings.botOwner || 'DARK-EYE-OFC'}\n` +
-            `┃ ⏳️ *RUNTIME:* ${formatUptime(process.uptime())}\n` +
+            `┃ ⏳️ *RUNTIME:* NODES/PANEL\n` +
             `┃ 🏷 *COMMANDS:* ${totalCommands}\n` +
             `┃ 📡 *PANEL:* ${panel}\n` +
             `┃ 💾 *MEMORY:* ${getMemoryUsage()}\n` +

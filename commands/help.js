@@ -1,12 +1,12 @@
 
 // commands/help.js - SPACE-MD🇿🇼 - SELF CONTAINED - NO EXTERNAL FILES NEEDED
-module.exports = {
-  name: "help",
-  category: "core",
-  status: "working",
-  desc: "SPACE-MD Help Menu",
+ 
+const settings = require('../settings');
+const fs = require('fs');
+const path = require('path');
+const { getSettings } = require('../lib/sessionSettings');
 
-  async execute(sock, msg, args, from) {
+async function helpCommand(sock, chatId, message, channelLink) {
     const os = require('os');
 
     // Day mood
@@ -17,7 +17,7 @@ module.exports = {
     else if (hour >= 17 && hour < 21) { mood = "Good Evening 🌇"; emoji = "🌆"; }
     else if (hour >= 21 || hour < 4) { mood = "Good Night 🌙"; emoji = "🌙"; }
 
-    const user = msg.pushName || "SPACE-MD User";
+    const user = message.pushName || "SPACE-MD User";
     const botName = "SPACE-MD🇿🇼";
     const owner = "DARK-EYE OFC";
     const ram = (os.totalmem() - os.freemem()) / 1024 / 1024;
@@ -82,11 +82,36 @@ module.exports = {
 
     // Watermark
     text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `🔵 SPACE-MD🇿🇼 | V3.0\n`;
+    text += `🔵 SPACE-MD🇿🇼   | V5.6.9\n`;
     text += `👑 DARK-EYE OFC | 1000 CMDS\n`;
-    text += `⚡ Baileys | Zimbabwe\n`;
+    text += `⚡ Baileys      | Zimbabwe\n`;
     text += `━━━━━━━━━━━━━━━━━━━━━━\n`;
 
-    await sock.sendMessage(from, { text }, { quoted: msg });
-  }
-};
+await sock.sendMessage(
+    chatId,
+    {
+        image: { url: './assets/menu.jpg' },
+        caption: '📜 *SPACE-MD HELP MENU* 🇿🇼'
+    },
+    { quoted: message }
+);
+
+await sock.sendMessage(
+    chatId,
+    { text },
+    { quoted: message }
+);
+
+await sock.sendMessage(
+    chatId,
+    {
+        audio: { url: './assets/help_audio.mp3' },
+        mimetype: 'audio/mpeg',
+        ptt: false
+    },
+    { quoted: message }
+ );
+
+}
+
+module.exports = helpCommand;

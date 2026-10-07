@@ -76,7 +76,7 @@ async function pingCommand(sock, chatId, message) {
         });
 
         // Done reaction
-        await react('🏓');
+        await react('✨️');
 
     } catch (error) {
         console.error('Ping error:', error);
