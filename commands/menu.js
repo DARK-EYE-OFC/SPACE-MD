@@ -783,7 +783,7 @@ function getCommandCount() {
 function formatCommands(commands) {
     return commands
         .map((command, index) =>
-            `┃╋━➤ .${command}`
+            `┃╋━➤ *.${command}*`
         )
         .join('\n');
 }

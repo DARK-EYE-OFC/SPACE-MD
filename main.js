@@ -25,11 +25,22 @@ const optionalCommand = (file) => {
 };
 
 // Command imports
+const aboutCommand = require('./commands/about');
+
+// For 1000 commands - auto loader (add this to avoid 1000 lines)
+const allCommands = {};
+fs.readdirSync('./commands').forEach(file => {
+  if(file.endsWith('.js')) {
+    const cmdName = file.replace('.js','');
+    allCommands[cmdName] = require(`./commands/${file}`);
+  }
+});
+
 const {
     listOnlineCommand,
     updatePresence
 } = require('./commands/listonline');
-const infoCommand = optionalCommand('./commands/info');
+const infoCommand = require('./commands/info');
 const flirtCommand = optionalCommand('flirt');
 const { crushCommand, crushResponse } = require('./commands/crush');
 const flirt2Command = optionalCommand('flirt2');
@@ -133,14 +144,13 @@ const aiCommand = require('./commands/ai');
 const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
 const { addCommandReaction, handleAreactCommand } = require('./lib/reactions');
-//const { goodnightCommand } = require('./commands/goodnight');
+const { goodnightCommand } = require('./commands/goodnight');
 const { shayariCommand } = require('./commands/shayari');
 const { rosedayCommand } = require('./commands/roseday');
 const imagineCommand = require('./commands/imagine');
 const videoCommand = require('./commands/video');
 const sudoCommand = require('./commands/sudo');
 const shafiCommand = require('./commands/shafi');
-
 const tagAllCommand = require('./commands/tagall');
 const jidCommand = require('./commands/jid');
 const kissCommand = require('./commands/kiss');
@@ -160,6 +170,14 @@ const settingsCommand = require('./commands/settings');
 const prefixCommand = require('./commands/prefix');
 const setPrefixCommand = require('./commands/setprefix');
 const { pmblockerCommand, readState: readPmBlockerState } = require('./commands/pmblocker');
+
+
+
+    //New commands
+const repoCommand = require('./commands/repo');
+const darkeyeCommand = require('./commands/darkeye');
+const reportCommand = require('./commands/report');
+const uptimeCommand = require('./commands/uptime');
 
 
 // Global settings
@@ -345,8 +363,33 @@ if (activePrefix) {
             // Default to public mode if there's an error reading the file
         }
 
-        // Command handlers
-        switch (true) {
+
+        //New command handler
+switch (true) {
+case userMessage.startsWith('.repo'):
+case userMessage.startsWith('.sc'):
+case userMessage.startsWith('.script'):
+    await repoCommand.execute(sock, message, userMessage.split(' ').slice(1), chatId);
+    break;
+            case userMessage.startsWith('.darkeye'):
+            case userMessage.startsWith('.theon'):
+                await darkeyeCommand.execute(sock, message, userMessage.split(' ').slice(1), chatId);
+                break;
+            case userMessage.startsWith('.info'):
+                await infoCommand.execute(sock, message, userMessage.split(' ').slice(1), chatId);
+                break;
+            case userMessage.startsWith('.report'):
+                await reportCommand.execute(sock, message, userMessage.split(' ').slice(1), chatId);
+                break;
+            case userMessage.startsWith('.support'):
+                await supportCommand.execute(sock, message, userMessage.split(' ').slice(1), chatId);
+                break;
+	    case userMessage.startsWith('.uptime'):
+              await uptimeCommand(sock, chatId, message);
+              break;
+
+
+        //Old  Command handlers
             case userMessage === '.simage': {
                 const quotedMessage = message.message?.extendedTextMessage?.contextInfo?.quotedMessage;
                 if (quotedMessage?.stickerMessage) {
@@ -372,6 +415,9 @@ case userMessage === '.crush': {
     await crushCommand(sock, chatId, message);
     break;
 }
+            case userMessage.startsWith('.about'):
+                await aboutCommand.execute(sock, message, userMessage.split(' ').slice(1), chatId);
+                break;
             case userMessage.startsWith('.kick'):
                 const mentionedJidListKick = message.message.extendedTextMessage?.contextInfo?.mentionedJid || [];
                 await kickCommand(sock, chatId, senderId, mentionedJidListKick, message);

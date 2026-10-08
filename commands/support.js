@@ -1,34 +1,57 @@
-module.exports = {
+const supportCommand = {
   name: "support",
-  alias: ["helpbot", "support", "pathanupport"],
-  description: "Get SPACE-MD support links and contact info",
-  category: "general",
-  async run({ conn, m }) {
-    const caption = `🛠️ *SPACE-MD - SUPPORT CENTER* 🛠️
+  alias: ["helpcenter", "contact", "website"],
+  category: "core",
+  desc: "Show SPACE-MD support center",
 
+  async execute(sock, msg, args, from) {
+    const pushName = msg.pushName || "User";
+    
+    const caption = `╭──────────────────┉
+│◊ *🔵SPACE-MD🇿🇼 SUPPORT* 
+│◊ HELLO: *${pushName}*
+╰──────────────────┉
 
+*Your SPACE-MD Support Website is LIVE!* 🚀
 
-💬 *WhatsApp Support Group:*  
-https://whatsapp.com/channel/0029VbAm8LqL2ATpxklIct2g
+🌐 *WEBSITE:* https://support-black-eight.vercel.app/
+👑 *OWNER:* DARK-EYE-OFC
+🤖 *BOT:* SPACE-MD V5.6.9
+⚡ *STATUS:* Online
 
-📲 *Telegram Support:*  
-@anayathacker
+Click the button below to open the website.
 
-🧑‍💻 *GitHub Repository:*  
-https://github.com/ANAYAT-AI/ANAYAT-AI
+> *Built by DARK-EYE-OFC - Zimbabwe's Finest*
+`;
 
-📞 *Bot Admin:*  
-wa.me/923452401207
-
-📞 *Bot Owner:*  
-wa.me/923452401207
-
-🧠 Use *.menu* to explore commands.
-💥 Stay updated and have fun using SPACE-MD!`;
-
-    await conn.sendMessage(m.chat, {
+    await sock.sendMessage(from, {
       text: caption,
-      mentions: [m.sender]
-    }, { quoted: m });
+      footer: "SPACE-MD | DARK-EYE-OFC",
+      templateButtons: [
+        {
+          index: 1,
+          urlButton: {
+            displayText: '🌐 OPEN SUPPORT WEBSITE',
+            url: 'https://support-black-eight.vercel.app/'
+          }
+        },
+        {
+          index: 2,
+          urlButton: {
+            displayText: '💬 CHAT WITH DEV',
+            url: 'https://wa.me/263788279395'
+          }
+        },
+        {
+          index: 3,
+          urlButton: {
+            displayText: '⭐ GITHUB',
+            url: 'https://github.com/DARK-EYE-OFC'
+          }
+        }
+      ]
+    }, { quoted: msg });
   }
-};
+}
+
+module.exports = supportCommand;

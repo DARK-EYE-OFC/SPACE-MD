@@ -50,7 +50,7 @@ async function helpCommand(sock, chatId, message, channelLink) {
     text += `│◊╭────────────┉•┉\n`;
     text += `│◊ ⊢──• [  🔵SPACE-MD🇿🇼 ]\n`;
     text += `│◊│\n`;
-    text += `│◊│ *_♤ HELLO: ${user}_*\n`;
+    text += `│◊│ *_♤ HELLO: @${user}_*\n`;
     text += `│◊│\n`;
     text += `│◊╰────────────┉•┉\n`;
     text += `│ ${emoji} ${mood}\n`;
@@ -71,7 +71,7 @@ async function helpCommand(sock, chatId, message, channelLink) {
     for (const [catName, cmds] of Object.entries(categories)) {
       text += `╭──• [ ${catName} ]\n`;
       text += `│◊│\n`;
-      text += `│◊ ⊢ ${cmds.length} of commands in category\n`;
+      text += `│◊ ⊢ ${cmds.length} commands in ${catName}\n`;
       for (const c of cmds) {
         text += `│◊│  .${c}\n`;
       }

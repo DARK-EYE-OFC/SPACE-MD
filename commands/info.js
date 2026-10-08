@@ -1,172 +1,96 @@
-const settings = require('../settings');
+const fs = require('fs');
+const path = require('path');
+const axios = require('axios');
 
-const GITHUB_OWNER = 'DARK-EYE-OFC';
-const GITHUB_REPO = 'SPACE-MD';
+const infoCommand = {
+  name: "info",
+  alias: ["information", "spaceinfo"],
+  category: "core",
+  status: "working",
+  desc: "Show SPACE-MD repo information live",
 
-function formatDate(dateString) {
-    if (!dateString) return 'Unknown';
-
-    const date = new Date(dateString);
-
-    if (Number.isNaN(date.getTime())) {
-        return 'Unknown';
-    }
-
-    return date.toLocaleDateString('en-GB', {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-}
-
-async function getGithubInfo() {
-    const headers = {
-        Accept: 'application/vnd.github+json',
-        'User-Agent': 'SPACE-MD'
-    };
-
-    const repoUrl =
-        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}`;
-
-    const commitsUrl =
-        `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/commits?per_page=1`;
-
-    const [repoResponse, commitsResponse] = await Promise.all([
-        fetch(repoUrl, { headers }),
-        fetch(commitsUrl, { headers })
-    ]);
-
-    if (!repoResponse.ok) {
-        throw new Error(`GitHub repository request failed: ${repoResponse.status}`);
-    }
-
-    if (!commitsResponse.ok) {
-        throw new Error(`GitHub commits request failed: ${commitsResponse.status}`);
-    }
-
-    const repo = await repoResponse.json();
-    const commits = await commitsResponse.json();
-
-    const latestCommit = Array.isArray(commits)
-        ? commits[0]
-        : null;
-
-    return {
-        createdAt: repo.created_at,
-        updatedAt: repo.pushed_at,
-        latestCommit: latestCommit?.commit?.message || 'Unknown',
-        latestCommitDate:
-            latestCommit?.commit?.committer?.date ||
-            latestCommit?.commit?.author?.date ||
-            repo.pushed_at,
-        repository: repo.full_name || `${GITHUB_OWNER}/${GITHUB_REPO}`
-    };
-}
-
-async function infoCommand(sock, chatId, message) {
-    const react = async (emoji) => {
-        try {
-            await sock.sendMessage(chatId, {
-                react: {
-                    text: emoji,
-                    key: message.key
-                }
-            });
-        } catch (error) {
-            console.error('Info reaction error:', error);
-        }
-    };
-
+  async execute(sock, msg, args, from) {
     try {
-        await react('♻️');
+      await sock.sendMessage(from, { react: { text: "♻️", key: msg.key } });
 
-        let github;
+      const pushName = msg.pushName || "User";
+      
+      // Fetch GitHub API
+      const { data } = await axios.get('https://api.github.com/repos/DARK-EYE-OFC/SPACE-MD');
+      
+      const lastUpdate = new Date(data.updated_at).toLocaleDateString('en-GB', {
+        day: '2-digit', month: '2-digit', year: 'numeric'
+      });
 
-        try {
-            github = await getGithubInfo();
-        } catch (error) {
-            console.error('GitHub info error:', error);
+      const infoText = `╭──────────────────┉
+│◊╭────────────┉•┉
+│◊ ⊢──• [  *🔵SPACE-MD🇿🇼* ]
+│◊│ 
+│◊│ *_♤ HELLO: *${pushName}_*
+│◊│
+│◊╰────────────┉•┉
+│ 🌌 SPACE MD Information
+╰──────────────────┉
 
-            github = {
-                createdAt: null,
-                updatedAt: null,
-                latestCommit: 'Unable to fetch',
-                latestCommitDate: null,
-                repository: `${GITHUB_OWNER}/${GITHUB_REPO}`
-            };
+╭────────────┉•┉
+│◊╭─◊ [ 📦 REPO DETAILS ]
+│◊ ⊢──• [ 🖥️ LIVE DATA ]
+│◊│ 🔲 \`REPO\` : ${data.name}
+│◊│ ⛓️ \`LINK\` : ${data.html_url}
+│◊│ 💻 \`CREATOR\` : ${data.owner.login}
+│◊│ 💫 \`FORKS\` : ${data.forks_count}
+│◊│ 🌟 \`STARS\` : ${data.stargazers_count}
+│◊│ 🤪 \`WATCHERS\` : ${data.watchers_count}
+│◊│ 📑 \`RELEASES\` : ${data.open_issues} Issues
+│◊│ 📦 \`SIZE\` : ${(data.size / 1024).toFixed(2)} MB
+│◊│ 📆 \`UPDATED\` : ${lastUpdate}
+│◊╰────────────┉•┉
+╰──────────────────┉
+
+╭──• [ 👑 CREDIT ]
+│◊│ 🤖 SPACE-MD🇿🇼 V5.6.9
+│◊│ 👑 DARK-EYE OFFICIAL DEV
+│◊│ 🏢 DARK-EYE TECH OFFICIALS
+│◊╰────────────┉•┉
+╰──────────────────┉`;
+
+      const imagePath = path.join(__dirname, '../assets/menu.jpg');
+      const imageBuffer = fs.existsSync(imagePath) ? fs.readFileSync(imagePath) : null;
+
+      // WhatsApp Button - FORK REPOSITORY [CLICK HERE]
+      const buttons = [
+        {
+          buttonId: '.repo',
+          buttonText: { displayText: '⭐ FORK REPOSITORY [CLICK HERE]' },
+          type: 1
         }
+      ];
 
-        const botName =
-            settings.botName || '🚀 SPACE-MD';
+      if (imageBuffer) {
+        await sock.sendMessage(from, {
+          image: imageBuffer,
+          caption: infoText,
+          footer: "🔵 SPACE-MD🇿🇼 | DARK-EYE OFC",
+          buttons: buttons,
+          headerType: 4
+        }, { quoted: msg });
+      } else {
+        await sock.sendMessage(from, {
+          text: infoText,
+          footer: "🔵 SPACE-MD🇿🇼 | DARK-EYE OFC",
+          buttons: buttons,
+          headerType: 1
+        }, { quoted: msg });
+      }
 
-        const currentVersion =
-            settings.version || '5.6.9';
+      await sock.sendMessage(from, { react: { text: "🎈", key: msg.key } });
 
-        const creator =
-            'DARK-EYE-OFC';
-
-        const upcomingVersion =
-            '6.0.0';
-
-        const caption =
-            `╔═══❖•ೋ° °ೋ•❖═══╗\n` +
-            `       🇿🇼 *𝐒𝐏𝐀𝐂𝐄 𝐌𝐃* 🇿🇼\n` +
-            `╚═══❖•ೋ° °ೋ•❖═══╝\n\n` +
-
-            `╭━━━━❒ 𝐁𝐎𝐓 𝐈𝐍𝐅𝐎 ❒━━━━╮\n` +
-            `┃\n` +
-            `┃ 🤖 *BOT NAME:* ${botName}\n` +
-            `┃ 👑 *CREATOR:* ${creator}\n` +
-            `┃ 🐙 *REPOSITORY:* ${github.repository}\n` +
-            `┃\n` +
-            `┃ 📅 *CREATED:* ${formatDate(github.createdAt)}\n` +
-            `┃ 🔄 *LAST UPDATED:* ${formatDate(github.updatedAt)}\n` +
-            `┃ 📝 *LAST COMMIT:* ${github.latestCommit}\n` +
-            `┃ 📆 *COMMIT DATE:* ${formatDate(github.latestCommitDate)}\n` +
-            `┃\n` +
-            `┃ 🚀 *VERSION:* ${currentVersion}\n` +
-            `┃ 🔮 *UPCOMING:* ${upcomingVersion}\n` +
-            `┃ 📌 *STATUS:* COMING SOON...\n` +
-            `┃\n` +
-            `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
-
-            `🔥 _"💦𝐒𝐏𝐀𝐂𝐄 𝐌𝐃🇿🇼 is not just a bot, it's an experience."_\n\n` +
-
-            `✨ _Designed with 💙 by 𝑫𝑨𝑹𝑲 𝑬𝒀𝑬 𝑶𝑭𝑪_\n\n` +
-
-            `🔍 _Use the commands below to explore the magic 🪄._\n\n` +
-
-            `> *♤powered by DARK-EYE OFC DEV*`;
-
-        await sock.sendMessage(
-            chatId,
-            {
-                text: caption
-            },
-            {
-                quoted: message
-            }
-        );
-
-        await react('✅️');
-
-    } catch (error) {
-        console.error('Error in info command:', error);
-
-        await react('❌️');
-
-        await sock.sendMessage(
-            chatId,
-            {
-                text:
-                    `❌️ *Unable to load SPACE-MD information.*\n\n` +
-                    `Please try *.info* again.`
-            },
-            {
-                quoted: message
-            }
-        );
+    } catch (e) {
+      console.log("INFO ERROR:", e.message);
+      await sock.sendMessage(from, { react: { text: "❌", key: msg.key } });
+      await sock.sendMessage(from, { text: "*❌ Failed to fetch repo info. Check internet / repo exists*" }, { quoted: msg });
     }
+  }
 }
 
 module.exports = infoCommand;

@@ -1,18 +1,22 @@
 /**
- * Arslan-Tech-Bot Bot - A WhatsApp Bot
- * Copyright (c) 2024 Professor
+ * DARK-EYE TECH  Bots - A WhatsApp Bot
+ * Copyright (c) 2024 dark-eye-officials
  * 
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the MIT License.
  * 
  * Credits:
  * - Baileys Library by @adiwajshing
- * - Pair Code implementation inspired by Arslan-Tech & Arslan-MD
+ * - Pair Code implementation inspired by DARK-EYE-Tech & SPACE-MD
  */
 require('dotenv').config()
 require('./settings')
 const { Boom } = require('@hapi/boom')
 const fs = require('fs')
+
+// Ignore messages that existed before this bot process started
+const BOT_START_TIME = Date.now();
+
 const chalk = require('chalk')
 const FileType = require('file-type')
 const path = require('path')
@@ -60,38 +64,492 @@ store.readFromFile()
 const settings = require('./settings')
 setInterval(() => store.writeToFile(), settings.storeWriteInterval || 10000)
 
-// 🌐 SPACE-MD Hosting Health Server
-const http = require('http');
+// 🌐 SPACE-MD BOT PANEL + HOSTING SERVER
 
-const healthServer = http.createServer((req, res) => {
-    if (req.url === '/health') {
-        res.writeHead(200, {
-            'Content-Type': 'application/json; charset=utf-8'
+const http = require('http');
+const crypto = require('crypto');
+
+let pairingSocket = null;
+
+/*
+ * Simple in-memory rate limiter.
+ *
+ * This protects the public pairing endpoint from
+ * being spammed with requests.
+ */
+const pairingAttempts = new Map();
+
+const PAIR_RATE_LIMIT = 60 * 1000; // 1 minute
+const MAX_PAIR_ATTEMPTS = 3;
+
+function getClientIp(req) {
+    const forwarded = req.headers['x-forwarded-for'];
+
+    if (forwarded) {
+        return String(forwarded).split(',')[0].trim();
+    }
+
+    return req.socket?.remoteAddress || 'unknown';
+}
+
+function isRateLimited(ip) {
+    const now = Date.now();
+    const record = pairingAttempts.get(ip);
+
+    if (!record || now - record.time > PAIR_RATE_LIMIT) {
+        pairingAttempts.set(ip, {
+            time: now,
+            count: 1
         });
 
-        res.end(JSON.stringify({
+        return false;
+    }
+
+    record.count++;
+
+    return record.count > MAX_PAIR_ATTEMPTS;
+}
+
+function sendJson(res, status, data) {
+    const body = JSON.stringify(data);
+
+    res.writeHead(status, {
+        'Content-Type': 'application/json; charset=utf-8',
+        'Cache-Control': 'no-store',
+        'Access-Control-Allow-Origin': '*'
+    });
+
+    res.end(body);
+}
+
+function sendHtml(res, html) {
+    res.writeHead(200, {
+        'Content-Type': 'text/html; charset=utf-8',
+        'Cache-Control': 'no-store'
+    });
+
+    res.end(html);
+}
+
+function getRequestBody(req) {
+    return new Promise((resolve, reject) => {
+        let body = '';
+
+        req.on('data', chunk => {
+            body += chunk;
+
+            if (body.length > 10_000) {
+                reject(new Error('Request body too large'));
+                req.destroy();
+            }
+        });
+
+        req.on('end', () => {
+            try {
+                resolve(body ? JSON.parse(body) : {});
+            } catch {
+                reject(new Error('Invalid JSON'));
+            }
+        });
+
+        req.on('error', reject);
+    });
+}
+
+const panelHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SPACE-MD Bot Panel</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    background:
+        radial-gradient(circle at top, #182b45 0%, #07101c 45%, #03070c 100%);
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.panel {
+    width: 100%;
+    max-width: 470px;
+    background: rgba(12, 24, 39, 0.96);
+    border: 1px solid rgba(0, 170, 255, 0.25);
+    border-radius: 24px;
+    padding: 30px 24px;
+    box-shadow: 0 20px 70px rgba(0, 0, 0, 0.45);
+}
+
+.logo {
+    text-align: center;
+    font-size: 54px;
+    margin-bottom: 5px;
+}
+
+h1 {
+    text-align: center;
+    margin: 0;
+    font-size: 28px;
+}
+
+.subtitle {
+    text-align: center;
+    color: #9eb1c7;
+    margin: 8px 0 25px;
+}
+
+.status {
+    text-align: center;
+    padding: 10px;
+    border-radius: 12px;
+    background: rgba(0, 255, 140, 0.08);
+    color: #54f7a5;
+    margin-bottom: 24px;
+    font-size: 14px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: #cbd8e7;
+    font-size: 14px;
+}
+
+input {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: 1px solid #29445f;
+    background: #07121f;
+    color: white;
+    font-size: 16px;
+    outline: none;
+}
+
+input:focus {
+    border-color: #009dff;
+}
+
+button {
+    width: 100%;
+    margin-top: 15px;
+    padding: 15px;
+    border: 0;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #009dff, #0067ff);
+    color: white;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: wait;
+}
+
+.result {
+    display: none;
+    margin-top: 22px;
+    padding: 20px;
+    border-radius: 16px;
+    background: #071522;
+    border: 1px solid #1d3d57;
+    text-align: center;
+}
+
+.code {
+    margin: 12px 0;
+    font-size: 32px;
+    letter-spacing: 5px;
+    font-weight: bold;
+    color: #54f7ff;
+}
+
+.instructions {
+    color: #9eb1c7;
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.error {
+    color: #ff7777;
+}
+
+.footer {
+    text-align: center;
+    margin-top: 25px;
+    color: #657991;
+    font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="panel">
+
+    <div class="logo">🚀</div>
+
+    <h1>SPACE-MD</h1>
+
+    <div class="subtitle">
+        WhatsApp Bot Control Panel
+    </div>
+
+    <div class="status">
+        🟢 Online • v${settings.version}
+    </div>
+
+    <form id="pairForm">
+
+        <label for="phone">
+            WhatsApp Number
+        </label>
+
+        <input
+            id="phone"
+            type="tel"
+            inputmode="numeric"
+            autocomplete="tel"
+            placeholder="2637XXXXXXXX"
+            maxlength="20"
+            required
+        >
+
+        <button id="pairButton" type="submit">
+            🔗 REQUEST PAIRING CODE
+        </button>
+
+    </form>
+
+    <div id="result" class="result">
+        <div>Pairing Code</div>
+
+        <div id="code" class="code"></div>
+
+        <div id="message" class="instructions"></div>
+    </div>
+
+    <div class="footer">
+        DARK-EYE-OFC • SPACE-MD
+    </div>
+
+</div>
+
+<script>
+const form = document.getElementById('pairForm');
+const phone = document.getElementById('phone');
+const button = document.getElementById('pairButton');
+const result = document.getElementById('result');
+const code = document.getElementById('code');
+const message = document.getElementById('message');
+
+form.addEventListener('submit', async (event) => {
+
+    event.preventDefault();
+
+    const number = phone.value.replace(/[^0-9]/g, '');
+
+    if (!number || number.length < 8) {
+        result.style.display = 'block';
+        code.textContent = '';
+        message.innerHTML =
+            '<span class="error">Enter a valid WhatsApp number with country code.</span>';
+        return;
+    }
+
+    button.disabled = true;
+    button.textContent = '⏳ REQUESTING CODE...';
+
+    result.style.display = 'block';
+    code.textContent = '';
+    message.textContent = 'Contacting WhatsApp...';
+
+    try {
+
+        const response = await fetch('/api/pair', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                phoneNumber: number
+            })
+        });
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.error || 'Unable to request pairing code.'
+            );
+        }
+
+        code.textContent = data.code;
+
+        message.innerHTML =
+            'Open WhatsApp → Settings → Linked Devices → ' +
+            'Link a Device → Link with phone number instead → ' +
+            'enter this code.';
+
+    } catch (error) {
+
+        code.textContent = '';
+
+        message.innerHTML =
+            '<span class="error">' +
+            (error.message || 'Pairing request failed.') +
+            '</span>';
+
+    } finally {
+
+        button.disabled = false;
+        button.textContent = '🔗 REQUEST PAIRING CODE';
+
+    }
+});
+</script>
+
+</body>
+</html>`;
+
+const healthServer = http.createServer(async (req, res) => {
+
+    /*
+     * Health check
+     */
+    if (req.method === 'GET' && req.url === '/health') {
+
+        sendJson(res, 200, {
             status: 'ok',
             bot: 'SPACE-MD',
             version: settings.version,
-            uptime: Math.floor(process.uptime())
-        }));
+            uptime: Math.floor(process.uptime()),
+            pairingReady: !!pairingSocket
+        });
 
         return;
     }
 
-    res.writeHead(200, {
-        'Content-Type': 'text/plain; charset=utf-8'
-    });
+    /*
+     * Main panel
+     */
+    if (req.method === 'GET' && req.url === '/') {
+        sendHtml(res, panelHtml);
+        return;
+    }
 
-    res.end(
-        `🚀 SPACE-MD v${settings.version}\n` +
-        `Status: Online\n` +
-        `Developer: DARK-EYE-OFC\n`
-    );
+    /*
+     * Pairing API
+     */
+    if (req.method === 'POST' && req.url === '/api/pair') {
+
+        const ip = getClientIp(req);
+
+        if (isRateLimited(ip)) {
+            sendJson(res, 429, {
+                success: false,
+                error: 'Too many pairing requests. Please wait one minute.'
+            });
+
+            return;
+        }
+
+        try {
+
+            const data = await getRequestBody(req);
+
+            let requestedNumber =
+                String(data.phoneNumber || '')
+                    .replace(/[^0-9]/g, '');
+
+            if (requestedNumber.length < 8 || requestedNumber.length > 15) {
+                sendJson(res, 400, {
+                    success: false,
+                    error: 'Invalid WhatsApp number.'
+                });
+
+                return;
+            }
+
+            if (!pairingSocket) {
+                sendJson(res, 503, {
+                    success: false,
+                    error: 'SPACE-MD WhatsApp connection is not ready yet. Please try again shortly.'
+                });
+
+                return;
+            }
+
+            if (pairingSocket.authState?.creds?.registered) {
+                sendJson(res, 409, {
+                    success: false,
+                    error: 'This SPACE-MD session is already registered. Log out the current session before pairing another number.'
+                });
+
+                return;
+            }
+
+            console.log(
+                `🔗 Pairing request received for +${requestedNumber}`
+            );
+
+            let code =
+                await pairingSocket.requestPairingCode(
+                    requestedNumber
+                );
+
+            code =
+                code?.match(/.{1,4}/g)?.join('-') ||
+                code;
+
+            sendJson(res, 200, {
+                success: true,
+                code
+            });
+
+        } catch (error) {
+
+            console.error(
+                '❌ Web pairing error:',
+                error
+            );
+
+            sendJson(res, 500, {
+                success: false,
+                error: 'Failed to generate pairing code. Check the Render logs.'
+            });
+        }
+
+        return;
+    }
+
+    /*
+     * Unknown route
+     */
+    sendJson(res, 404, {
+        success: false,
+        error: 'Not found'
+    });
 });
 
 healthServer.listen(settings.port, '0.0.0.0', () => {
-    console.log(`🌐 SPACE-MD health server running on port ${settings.port}`);
+    console.log(
+        `🌐 SPACE-MD Bot Panel running on port ${settings.port}`
+    );
 });
 
 // Memory optimization - Force garbage collection if available
@@ -156,6 +614,11 @@ async function startXeonBotInc() {
         defaultQueryTimeoutMs: undefined,
     })
 
+    pairingSocket = XeonBotInc;
+    pairingSocket.authState = {
+        creds: state.creds
+    };
+
     store.bind(XeonBotInc.ev)
 
 XeonBotInc.ev.on('presence.update', ({ id, presences }) => {
@@ -176,6 +639,13 @@ XeonBotInc.ev.on('presence.update', ({ id, presences }) => {
 // Ignore anything that is not a live incoming message.
 // This prevents WhatsApp history synchronization from replaying old commands.
 if (chatUpdate.type !== 'notify') return
+
+// Ignore messages created before this bot process started
+const messageTimestamp = Number(mek.messageTimestamp || 0) * 1000;
+
+if (messageTimestamp && messageTimestamp < BOT_START_TIME) {
+    return;
+}
 
 if (!XeonBotInc.public && !mek.key.fromMe) return
 
@@ -379,6 +849,21 @@ if (!pn('+' + phoneNumber).isPossible()) {
             // ignore
         }
     });
+
+const goodbyeHandler = require('./commands/group/goodbye');
+
+XeonBotInc.ev.on('group-participants.update', async (update) => {
+  const { id, participants, action } = update;
+  const metadata = await XeonBotInc.groupMetadata(id);
+
+  if (action === 'remove') {
+    await goodbyeHandler.handleLeave(XeonBotInc, id, participants, metadata);
+  }
+  // also handle welcome if you have it
+});
+
+
+
 
     XeonBotInc.ev.on('creds.update', saveCreds)
 
