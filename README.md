@@ -36,6 +36,8 @@ Developed by DARK-EYE-OFC
 
 
 
+# ________________________
+
 🌌 About SPACE-MD
 
 SPACE-MD is a WhatsApp automation project focused on giving users a powerful collection of commands in a single Multi-Device bot.
@@ -102,15 +104,22 @@ Example:
 
 # 4️⃣ ON YOUR PHONE OPEN WHATSAPP
 
+
 WhatsApp
+
    ↓
 Settings
+
    ↓
 Linked Devices
+
    ↓
 Link a Device
+
    ↓
 Link with phone number
+
+-----------------
 
 # 5️⃣ Enter the pairing code provided by the SPACE-MD panel.
 _______________________
