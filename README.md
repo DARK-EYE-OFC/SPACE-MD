@@ -15,9 +15,8 @@ Developed by DARK-EYE-OFC
 </a><a href="https://support-black-eight.vercel.app/">
   <img src="https://img.shields.io/badge/🆘%20SUPPORT-DARK--EYE--OFC-red?style=for-the-badge" alt="Support">
 </a><br><br>
-
 </a><a href="https://support-black-eight.vercel.app/privacy">
-  <img src="https://img.shields.io/badge/🆘%20🔏%20PRIVACY-📑%20POLICY-red?style=for-the-badge" alt="Support">
+  <img src="https://img.shields.io/badge/🆘%20🔏%20PRIVACY-📑%20POLICY-blue?style=for-the-badge" alt="Support">
 </a><br><br>
 
 
