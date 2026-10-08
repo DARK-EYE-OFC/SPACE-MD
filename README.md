@@ -34,51 +34,7 @@ Developed by DARK-EYE-OFC
 <a class="btn btn-blue" href="https://github.com/DARK-EYE-OFC/SPACE-MD/fork">🍴 Fork Repo</a>
 </div>
 
-<div class="card">
-  <style>
-.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:20px 0}
-.btn-link{
-  flex:1 1 200px;
-  max-width:320px;
-  text-align:center;
-  padding:14px 20px;
-  border-radius:12px;
-  font-weight:700;
-  font-size:14px;
-  text-decoration:none;
-  color:#fff;
-  transition:0.2s;
-  border:1px solid #222;
-  display:block;
-}
-.btn-privacy{background:linear-gradient(135deg,#00aaff,#0066ff)}
-.btn-terms{background:linear-gradient(135deg,#8a2be2,#4a00e0)}
-.btn-wa1{background:linear-gradient(135deg,#25D366,#128C7E)}
-.btn-wa2{background:linear-gradient(135deg,#00c853,#009624)}
-.btn-link:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.4);opacity:0.9}
-</style>
 
-<!-- ROW 1 : PRIVACY + TERMS -->
-<div class="btn-row">
-  <a href="https://support-black-eight.vercel.app/privacy" target="_blank" class="btn-link btn-privacy">
-    PRIVACY SPACE-MD
-  </a>
-  <a href="https://support-black-eight.vercel.app/terms" target="_blank" class="btn-link btn-terms">
-    TERMS & CONDITIONS
-  </a>
-</div>
-
-<!-- ROW 2 : WHATSAPP BUTTONS - NO NUMBER SHOWN, OPENS DIRECT -->
-<div class="btn-row">
-  <a href="https://wa.me/263788279395?text=Hello%20DARK-EYE-OFC%20I%20need%20SPACE-MD%20support" target="_blank" class="btn-link btn-wa1">
-    1.WHATSAPP | DARK-EYE-OFC
-  </a>
-  <a href="https://wa.me/263783546271?text=Hello%20DARK-EYE%20TECH%20I%20need%20SPACE-MD%20support" target="_blank" class="btn-link btn-wa2">
-        2. WHATSAPP | DARK-EYE TECH
-  </a>
-  <p>📧 Email: darkeyeofc@gmail.com</p>
-</div>
-</section>
 
 🌌 About SPACE-MD
 
