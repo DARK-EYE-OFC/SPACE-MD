@@ -6,6 +6,35 @@ SPACE-MD is a feature-rich WhatsApp bot built with Baileys, designed to provide 
 
 Developed by DARK-EYE-OFC
 
+<p align="center">
+  <img src="assets/menu.jpg" width="100%" alt="SPACE-MD BANNER"/>
+</p>
+
+<h1 align="center">🔵 SPACE-MD V5.6.9</h1>
+<h3 align="center">The Most Advanced WhatsApp MD Bot By DARK-EYE-OFC 🇿🇼</h3>
+
+<p align="center">
+  <a href="https://support-black-eight.vercel.app"><img src="https://img.shields.io/badge/Support-Website-00aaff?style=for-the-badge&logo=vercel&logoColor=white"/></a>
+  <a href="https://support-black-eight.vercel.app/privacy"><img src="https://img.shields.io/badge/Privacy-Policy-green?style=for-the-badge&logo=shield&logoColor=white"/></a>
+  <a href="https://support-black-eight.vercel.app/terms"><img src="https://img.shields.io/badge/Terms-Conditions-blueviolet?style=for-the-badge&logo=bookstack&logoColor=white"/></a>
+</p>
+
+<p align="center">
+  <a href="https://wa.me/263788279395?text=Hello%20DARK-EYE-OFC%20I%20need%20SPACE-MD"><img src="https://img.shields.io/badge/WhatsApp-DARK--EYE--OFC-25D366?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
+  <a href="https://wa.me/263783546271?text=Hello%20DARK-EYE%20TECH"><img src="https://img.shields.io/badge/WhatsApp-DARK--EYE%20TECH-128C7E?style=for-the-badge&logo=whatsapp&logoColor=white"/></a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/github/stars/DARK-EYE-OFC/SPACE-MD?color=00aaff&style=for-the-badge&logo=github"/>
+  <img src="https://img.shields.io/github/forks/DARK-EYE-OFC/SPACE-MD?color=00aaff&style=for-the-badge&logo=github"/>
+  <img src="https://img.shields.io/badge/Version-5.6.9-00aaff?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Node.js-18+-00c853?style=for-the-badge&logo=node.js"/>
+</p>
+
+---
+
+<img src="assets/menu.jpg" alt="SPACE-MD MENU"/>
+
 <br><a href="https://github.com/DARK-EYE-OFC/SPACE-MD/fork">
   <img src="https://img.shields.io/badge/🍴%20FORK%20REPO-SPACE--MD-blue?style=for-the-badge" alt="Fork Repository">
 </a><a href="https://github.com/DARK-EYE-OFC/SPACE-MD">
