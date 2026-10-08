@@ -92,7 +92,9 @@ Use the official SPACE-MD web panel button to request your WhatsApp pairing code
 *Enter your WhatsApp number using the international country code. without spaces or (+)*
 ------------------
 Example:
+
 263XXXXXXXXX
+
 ------------------
 
 # 3️⃣ CLICK THE REQUEST CODE BUTTON 
@@ -100,15 +102,15 @@ Example:
 
 # 4️⃣ ON YOUR PHONE OPEN WHATSAPP
 
-*WhatsApp*
+WhatsApp
    ↓
-*Settings*
+Settings
    ↓
-*Linked Devices*
+Linked Devices
    ↓
-*Link a Device*
+Link a Device
    ↓
-*Link with phone number*
+Link with phone number
 
 # 5️⃣ Enter the pairing code provided by the SPACE-MD panel.
 _______________________
