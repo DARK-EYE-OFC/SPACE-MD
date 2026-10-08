@@ -16,6 +16,11 @@ Developed by DARK-EYE-OFC
   <img src="https://img.shields.io/badge/🆘%20SUPPORT-DARK--EYE--OFC-red?style=for-the-badge" alt="Support">
 </a><br><br>
 
+</a><a href="https://support-black-eight.vercel.app/privacy">
+  <img src="https://img.shields.io/badge/🆘%20PRIVACY-POLICY--SPACE-MD-red?style=for-the-badge" alt="Support">
+</a><br><br>
+
+
 <img src="https://img.shields.io/github/stars/DARK-EYE-OFC/SPACE-MD?style=for-the-badge" alt="Stars">
 <img src="https://img.shields.io/github/watchers/DARK-EYE-OFC/SPACE-MD?style=for-the-badge" alt="Watchers">
 <img src="https://img.shields.io/github/forks/DARK-EYE-OFC/SPACE-MD?style=for-the-badge" alt="Forks">
