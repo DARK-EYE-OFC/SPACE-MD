@@ -27,6 +27,59 @@ Developed by DARK-EYE-OFC
 <img src="https://img.shields.io/badge/COMMANDS-129-orange?style=for-the-badge" alt="Commands">
 <img src="https://img.shields.io/badge/BAILEYS-6.7.24-blue?style=for-the-badge" alt="Baileys"></div>---
 
+<div class="card">
+<h2>🚀 How to Deploy?</h2>
+<p>1. Fork the repo on GitHub<br>2. Get Pair Code from Dashboard<br>3. Deploy on Heroku / Panel / Replit / Koyeb<br>4. Enjoy SPACE-MD V5.6.9</p>
+<br>
+<a class="btn btn-blue" href="https://github.com/DARK-EYE-OFC/SPACE-MD/fork">🍴 Fork Repo</a>
+</div>
+
+<div class="card">
+  <style>
+.btn-row{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin:20px 0}
+.btn-link{
+  flex:1 1 200px;
+  max-width:320px;
+  text-align:center;
+  padding:14px 20px;
+  border-radius:12px;
+  font-weight:700;
+  font-size:14px;
+  text-decoration:none;
+  color:#fff;
+  transition:0.2s;
+  border:1px solid #222;
+  display:block;
+}
+.btn-privacy{background:linear-gradient(135deg,#00aaff,#0066ff)}
+.btn-terms{background:linear-gradient(135deg,#8a2be2,#4a00e0)}
+.btn-wa1{background:linear-gradient(135deg,#25D366,#128C7E)}
+.btn-wa2{background:linear-gradient(135deg,#00c853,#009624)}
+.btn-link:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(0,0,0,0.4);opacity:0.9}
+</style>
+
+<!-- ROW 1 : PRIVACY + TERMS -->
+<div class="btn-row">
+  <a href="https://support-black-eight.vercel.app/privacy" target="_blank" class="btn-link btn-privacy">
+    PRIVACY SPACE-MD
+  </a>
+  <a href="https://support-black-eight.vercel.app/terms" target="_blank" class="btn-link btn-terms">
+    TERMS & CONDITIONS
+  </a>
+</div>
+
+<!-- ROW 2 : WHATSAPP BUTTONS - NO NUMBER SHOWN, OPENS DIRECT -->
+<div class="btn-row">
+  <a href="https://wa.me/263788279395?text=Hello%20DARK-EYE-OFC%20I%20need%20SPACE-MD%20support" target="_blank" class="btn-link btn-wa1">
+    1.WHATSAPP | DARK-EYE-OFC
+  </a>
+  <a href="https://wa.me/263783546271?text=Hello%20DARK-EYE%20TECH%20I%20need%20SPACE-MD%20support" target="_blank" class="btn-link btn-wa2">
+        2. WHATSAPP | DARK-EYE TECH
+  </a>
+  <p>📧 Email: darkeyeofc@gmail.com</p>
+</div>
+</section>
+
 🌌 About SPACE-MD
 
 SPACE-MD is a WhatsApp automation project focused on giving users a powerful collection of commands in a single Multi-Device bot.
@@ -74,77 +127,40 @@ Information| Details
 
 📱 Connect to WhatsApp
 
-Use the official SPACE-MD web panel to request your WhatsApp pairing code.
+Use the official SPACE-MD web panel button to request your WhatsApp pairing code.
 
-"🔗 GET PAIRING CODE" (https://space-md-nrvd.onrender.com)
+# 1️⃣ CLICK THE GET PAIR CODE BUTTON 
 
-🆘 Support
+# 2️⃣ ENTER YOUR WHATSAPP NUMBER
 
-Need help with SPACE-MD, deployment, pairing, commands, or development?
-
-"🆘 OPEN SUPPORT CENTER" (https://support-black-eight.vercel.app/)
-
-💻 GitHub
-
-"🌐 SPACE-MD GITHUB REPOSITORY" (https://github.com/DARK-EYE-OFC/SPACE-MD)
-
-👀 Watch Repository
-
-"👀 WATCH SPACE-MD" (https://github.com/DARK-EYE-OFC/SPACE-MD/subscription)
-
----
-
-📲 WhatsApp Pairing
-
-SPACE-MD includes a web-based pairing panel.
-
-1️⃣ Open the panel
-
-Open:
-
-https://space-md-nrvd.onrender.com
-
-2️⃣ Enter your number
-
-Enter your WhatsApp number using the international country code.
-
+*Enter your WhatsApp number using the international country code. without spaces or (+)*
+------------------
 Example:
-
 263XXXXXXXXX
+------------------
 
-Do not include:
+# 3️⃣ CLICK THE REQUEST CODE BUTTON 
+*LONG PRESS THE CODE AND CLICK COPY*
 
-+
-spaces
--
+# 4️⃣ ON YOUR PHONE OPEN WHATSAPP
 
-3️⃣ Request the code
-
-Press:
-
-REQUEST PAIRING CODE
-
-4️⃣ Link WhatsApp
-
-On your phone:
-
-WhatsApp
+*WhatsApp*
    ↓
-Settings
+*Settings*
    ↓
-Linked Devices
+*Linked Devices*
    ↓
-Link a Device
+*Link a Device*
    ↓
-Link with phone number
+*Link with phone number*
 
-Enter the pairing code provided by the SPACE-MD panel.
-
+# 5️⃣ Enter the pairing code provided by the SPACE-MD panel.
+_______________________
 ⚠️ Important
 
 Keep the SPACE-MD session active after pairing. Do not share your pairing code with anyone.
 
----
+__________________
 
 🍴 Fork SPACE-MD
 
