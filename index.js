@@ -850,18 +850,6 @@ if (!pn('+' + phoneNumber).isPossible()) {
         }
     });
 
-const goodbyeHandler = require('./commands/group/goodbye');
-
-XeonBotInc.ev.on('group-participants.update', async (update) => {
-  const { id, participants, action } = update;
-  const metadata = await XeonBotInc.groupMetadata(id);
-
-  if (action === 'remove') {
-    await goodbyeHandler.handleLeave(XeonBotInc, id, participants, metadata);
-  }
-  // also handle welcome if you have it
-});
-
 
 
 

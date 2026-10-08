@@ -1,7 +1,7 @@
 const axios = require('axios');
 const FormData = require('form-data');
 
-const urlCommand = {
+const tourlCommand = {
   name: "tourl",
   alias: ["upload", "geturl", "catbox"],
   category: "tools",
