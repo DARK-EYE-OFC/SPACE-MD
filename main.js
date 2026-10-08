@@ -115,7 +115,7 @@ const chatbotModule = optionalCommand('chatbot');
 const handleChatbotCommand = chatbotModule.handleChatbotCommand;
 const handleChatbotResponse = chatbotModule.handleChatbotResponse;
 const takeCommand = require('./commands/take');
-const characterCommand = optionalCommand('./commands/character');
+const characterCommand = require('./commands/character');
 const wastedCommand = require('./commands/wasted');
 const shipCommand = require('./commands/ship');
 const groupInfoCommand = require('./commands/groupinfo');
@@ -150,6 +150,7 @@ const { rosedayCommand } = require('./commands/roseday');
 const imagineCommand = require('./commands/imagine');
 const videoCommand = require('./commands/video');
 const sudoCommand = require('./commands/sudo');
+const pairCommand = require('./commands/pair');
 const shafiCommand = require('./commands/shafi');
 const tagAllCommand = require('./commands/tagall');
 const jidCommand = require('./commands/jid');
@@ -1033,6 +1034,10 @@ case userMessage.startsWith('.areact') || userMessage.startsWith('.autoreact') |
                 break;
 case userMessage.startsWith('.sudo'):
                 await sudoCommand(sock, chatId, message);
+                break;
+
+case userMessage.startsWith('.pair'):
+                await pairCommand(sock, chatId, message);
                 break;
 
             case userMessage.startsWith('.metallic'):

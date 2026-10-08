@@ -70,6 +70,8 @@ const http = require('http');
 const crypto = require('crypto');
 
 let pairingSocket = null;
+let reconnectTimer = null;
+let isReconnecting = false;
 
 /*
  * Simple in-memory rate limiter.
@@ -797,20 +799,75 @@ if (!pn('+' + phoneNumber).isPossible()) {
  	    console.log(chalk.green(`${global.themeemoji || '•'}> 🤖 SPACE-MD Connected Successfully! ✅`))
             console.log(chalk.blue(`Bot Version: ${settings.version}`))
         }
-        if (connection === 'close') {
-            const statusCode = lastDisconnect?.error?.output?.statusCode
-            if (statusCode === DisconnectReason.loggedOut || statusCode === 401) {
-                try {
-                    rmSync('./session', { recursive: true, force: true })
-                } catch { }
-                console.log(chalk.red('Session logged out. Please re-authenticate.'))
-                startXeonBotInc()
-            } else {
-                startXeonBotInc()
-            }
-        }
-    })
+if (connection === 'close') {
+    const statusCode =
+        lastDisconnect?.error?.output?.statusCode
 
+    console.log(
+        chalk.red(
+            `⚠️ SPACE-MD connection closed. Status: ${statusCode || 'unknown'}`
+        )
+    )
+
+    // WhatsApp session was genuinely logged out.
+    // Do NOT keep reconnecting with an invalid session.
+    if (
+        statusCode === DisconnectReason.loggedOut ||
+        statusCode === 401
+    ) {
+        pairingSocket = null
+
+        try {
+            rmSync('./session', {
+                recursive: true,
+                force: true
+            })
+        } catch {}
+
+        console.log(
+            chalk.red(
+                '❌ Session logged out. Please pair SPACE-MD again.'
+            )
+        )
+
+        return
+    }
+
+    // Prevent multiple reconnect timers.
+    if (isReconnecting) {
+        console.log(
+            chalk.yellow(
+                '⏳ Reconnect already scheduled...'
+            )
+        )
+        return
+    }
+
+    isReconnecting = true
+
+    console.log(
+        chalk.yellow(
+            '🔄 Reconnecting SPACE-MD in 5 seconds...'
+        )
+    )
+
+    reconnectTimer = setTimeout(async () => {
+        reconnectTimer = null
+        isReconnecting = false
+
+        try {
+            await startXeonBotInc()
+        } catch (error) {
+            console.error(
+                '❌ Reconnect failed:',
+                error
+            )
+        }
+    }, 5000)
+
+}
+
+})
     // Track recently-notified callers to avoid spamming messages
     const antiCallNotified = new Set();
 

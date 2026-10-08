@@ -1,88 +1,111 @@
-const axios = require('axios');
-const { sleep } = require('../lib/myfunc');
+const settings = require('../settings');
 
-async function pairCommand(sock, chatId, message, q) {
-    // Shared context info with SPACE-MD branding
-    const newsletterMeta = {
-        forwardingScore: 1,
-        isForwarded: true,
-        forwardedNewsletterMessageInfo: {
-            newsletterJid: '120363420933039839@newsletter',
-            newsletterName: '🛠️ SPACE-MD',
-            serverMessageId: -1
-        }
-    };
+const RENDER_URL = 'https://space-md-nrvd.onrender.com';
 
+async function pairCommand(sock, chatId, message) {
     try {
-        if (!q) {
-            return await sock.sendMessage(chatId, {
-                text: "📞 Please provide a valid WhatsApp number.\nExample: `.pair 923452401207`",
-                contextInfo: newsletterMeta
-            });
-        }
+        const senderJid =
+            message.key.participant ||
+            message.key.remoteJid;
 
-        const numbers = q.split(',')
-            .map((v) => v.replace(/[^0-9]/g, ''))
-            .filter((v) => v.length > 5 && v.length < 20);
+        const ownerJid =
+            settings.ownerNumber + '@s.whatsapp.net';
 
-        if (numbers.length === 0) {
-            return await sock.sendMessage(chatId, {
-                text: "❌ Invalid number format. Please use something like `923452401207`.",
-                contextInfo: newsletterMeta
-            });
-        }
+        const isOwner =
+            message.key.fromMe ||
+            senderJid === ownerJid;
 
-        for (const number of numbers) {
-            const whatsappID = number + '@s.whatsapp.net';
-            const result = await sock.onWhatsApp(whatsappID);
-
-            if (!result[0]?.exists) {
-                return await sock.sendMessage(chatId, {
-                    text: `❗ The number *${number}* is not registered on WhatsApp.`,
-                    contextInfo: newsletterMeta
-                });
-            }
-
+        if (!isOwner) {
             await sock.sendMessage(chatId, {
-                text: "⏳ Please wait while we fetch the pairing code...",
-                contextInfo: newsletterMeta
+                text: '❌ *Only the bot owner can use the pair command.*'
             });
-
-            try {
-                const response = await axios.get(`https://arslan-md-pair-site.onrender.com/code?number=${number}`);
-                
-                if (response.data && response.data.code) {
-                    const code = response.data.code;
-                    if (code === "Service Unavailable") throw new Error('Service Unavailable');
-
-                    await sleep(3000);
-
-                    await sock.sendMessage(chatId, {
-                        text: `✅ *Pairing Code:* \`${code}\`\nUse this code in terminal when prompted.`,
-                        contextInfo: newsletterMeta
-                    });
-                } else {
-                    throw new Error('Invalid response from server');
-                }
-
-            } catch (apiError) {
-                console.error('API Error:', apiError);
-                const errorMessage = apiError.message === 'Service Unavailable'
-                    ? "🚫 Service is currently unavailable. Please try again later."
-                    : "⚠️ Failed to generate pairing code. Please try again later.";
-
-                await sock.sendMessage(chatId, {
-                    text: errorMessage,
-                    contextInfo: newsletterMeta
-                });
-            }
+            return;
         }
+
+        const rawText =
+            message.message?.conversation ||
+            message.message?.extendedTextMessage?.text ||
+            '';
+
+        const args = rawText.trim().split(/\s+/).slice(1);
+        const phoneNumber = (args[0] || '').replace(/\D/g, '');
+
+        if (!phoneNumber) {
+            await sock.sendMessage(chatId, {
+                text:
+                    '❌ *Phone number required!*\n\n' +
+                    'Example:\n' +
+                    '`.pair 263788123456`'
+            });
+            return;
+        }
+
+        if (phoneNumber.length < 7 || phoneNumber.length > 15) {
+            await sock.sendMessage(chatId, {
+                text: '❌ *Invalid phone number.*\nUse the country code without `+`, spaces or dashes.'
+            });
+            return;
+        }
+
+        await sock.sendMessage(chatId, {
+            text: '⏳ *Requesting pairing code from Render...*'
+        });
+
+        const response = await fetch(
+            `${RENDER_URL}/api/pair`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phoneNumber: phoneNumber
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            await sock.sendMessage(chatId, {
+                text:
+                    '❌ *Pairing request failed.*\n\n' +
+                    `Reason: ${data.error || 'Unknown error'}`
+            });
+            return;
+        }
+
+await sock.sendMessage(chatId, {
+    text:
+        `╭━━━〔 🚀 *SPACE-MD PAIRING* 〕━━━╮\n` +
+        `┃\n` +
+        `┃ 📱 *Number:* ${phoneNumber}\n` +
+        `┃\n` +
+        `┃ 🔐 *PAIRING CODE*\n` +
+        `┃\n` +
+        `┃ *\`${data.code}\`*\n` +
+        `┃\n` +
+        `┃ 📋 *COPY THE CODE ABOVE*\n` +
+        `┃\n` +
+        `┃ Open WhatsApp → Linked Devices\n` +
+        `┃ → Link a Device → Link with phone number\n` +
+        `┃\n` +
+        `╰━━━━━━━━━━━━━━━━━━━━━━╯\n\n` +
+        `⏳ *Use the code before it expires.*\n\n` +
+        `> ⚡ *DARK-EYE-OFC*`
+});
+
+await sock.sendMessage(chatId, {
+    text: data.code
+});
 
     } catch (error) {
-        console.error('Unexpected Error:', error);
+        console.error('Pair command error:', error);
+
         await sock.sendMessage(chatId, {
-            text: "❌ An unexpected error occurred. Please try again later.",
-            contextInfo: newsletterMeta
+            text:
+                '❌ *Unable to contact the SPACE-MD Render pairing service.*\n\n' +
+                `Error: ${error.message}`
         });
     }
 }
