@@ -17,7 +17,7 @@ Developed by DARK-EYE-OFC
 </a><br><br>
 
 </a><a href="https://support-black-eight.vercel.app/privacy">
-  <img src="https://img.shields.io/badge/🆘%20PRIVACY-POLICY--SPACE-MD-red?style=for-the-badge" alt="Support">
+  <img src="https://img.shields.io/badge/🆘%20PRIVACY-POLICY-red?style=for-the-badge" alt="Support">
 </a><br><br>
 
 
