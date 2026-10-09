@@ -5,7 +5,6 @@ async function subscribeToGroupPresence(sock, chatId, participants) {
 
     for (const participant of participants) {
         const jid = participant.id;
-
         if (!jid) continue;
 
         try {
@@ -28,7 +27,11 @@ function updatePresence(id, presences) {
     for (const [participant, presence] of Object.entries(presences)) {
         const status = presence?.lastKnownPresence;
 
-        if (status === 'available' || status === 'composing' || status === 'recording') {
+        if (
+            status === 'available' ||
+            status === 'composing' ||
+            status === 'recording'
+        ) {
             groupPresence.set(participant, {
                 status,
                 lastSeen: Date.now()
@@ -41,32 +44,46 @@ function updatePresence(id, presences) {
 
 function getOnlineMembers(chatId, participants, botId) {
     const groupPresence = onlineCache.get(chatId);
-
     if (!groupPresence) return [];
 
-const botNumber = botId?.split(':')[0];
+    const botNumber = botId?.split(':')[0]?.split('@')[0];
 
-return participants.filter(member => {
-    const memberNumber = member.id?.split(':')[0];
+    return participants.filter(member => {
+        const memberNumber = member.id?.split(':')[0]?.split('@')[0];
 
-    if (!memberNumber || memberNumber === botNumber) {
-        return false;
-    }
-
-    for (const storedJid of groupPresence.keys()) {
-        const storedNumber = storedJid?.split(':')[0];
-
-        if (storedNumber === memberNumber) {
-            return true;
+        if (!memberNumber || memberNumber === botNumber) {
+            return false;
         }
+
+        for (const storedJid of groupPresence.keys()) {
+            const storedNumber = storedJid?.split(':')[0]?.split('@')[0];
+
+            if (storedNumber === memberNumber) {
+                return true;
+            }
+        }
+
+        return false;
+    });
+}
+
+function getDisplayName(member) {
+    // Use a name if the group metadata provides one.
+    const name =
+        member.notify ||
+        member.name ||
+        member.pushName;
+
+    if (name && name.trim()) {
+        return name.trim().replace(/^@+/, '');
     }
 
-    return false;
-});
+    // Fallback if WhatsApp does not provide a display name.
+    return 'Member';
 }
 
 async function listOnlineCommand(sock, chatId, message, mode = 'list') {
-    const react = async (emoji) => {
+    const react = async emoji => {
         try {
             await sock.sendMessage(chatId, {
                 react: {
@@ -97,17 +114,13 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
 
         const metadata = await sock.groupMetadata(chatId);
         const participants = metadata.participants || [];
-        await subscribeToGroupPresence(
-    sock,
-    chatId,
-    participants
-);
+
+        await subscribeToGroupPresence(sock, chatId, participants);
+
         const senderId =
             message.key.participant || message.key.remoteJid;
 
-        const sender = participants.find(
-            p => p.id === senderId
-        );
+        const sender = participants.find(p => p.id === senderId);
 
         const isAdmin =
             sender?.admin === 'admin' ||
@@ -155,9 +168,7 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
         const mentions = onlineMembers.map(member => member.id);
 
         const names = onlineMembers.map((member, index) => {
-            const number = member.id.split('@')[0];
-
-            return `${index + 1}. @${number}`;
+            return `${index + 1}. @${getDisplayName(member)}`;
         });
 
         const header =
@@ -176,22 +187,14 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
             names.join('\n') +
             footer;
 
-        if (mode === 'tag') {
-            await sock.sendMessage(
-                chatId,
-                {
-                    text,
-                    mentions
-                },
-                { quoted: message }
-            );
-        } else {
-            await sock.sendMessage(
-                chatId,
-                { text },
-                { quoted: message }
-            );
-        }
+        await sock.sendMessage(
+            chatId,
+            {
+                text,
+                ...(mode === 'tag' ? { mentions } : {})
+            },
+            { quoted: message }
+        );
 
         await react('🖱');
 
@@ -211,10 +214,7 @@ async function listOnlineCommand(sock, chatId, message, mode = 'list') {
                 { quoted: message }
             );
         } catch (sendError) {
-            console.error(
-                'ListOnline error message failed:',
-                sendError
-            );
+            console.error('ListOnline error message failed:', sendError);
         }
     }
 }
