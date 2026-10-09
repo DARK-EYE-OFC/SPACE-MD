@@ -7,3 +7,6 @@ main-backup.js
 *.log
 data/messageCount.json
 package-lock.json
+data/sessionSettings.json
+data/userGroupData.json
+data/warnings.json
