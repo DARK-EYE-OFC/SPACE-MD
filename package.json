@@ -4,9 +4,9 @@
   "description": "WhatsApp Bot",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "docker:build": "docker build -t space-md .",
+    "start": "pm2 start index.js --name space-md",
+    "stop": "pm2 stop space-md",
+    "restart": "pm2 restart space-md",
     "docker:run": "docker run -e SESSION_ID=$SESSION_ID space-md"
   },
   "keywords": [
@@ -55,7 +55,6 @@
     "ruhend-scraper": "^8.3.0",
     "safe-stable-stringify": "^2.5.0",
     "set-cookie": "^0.0.4",
-    "sharp": "^0.32.6",
     "tough-cookie": "^5.0.0",
     "translate-google-api": "^1.0.4",
     "util": "^0.12.4",

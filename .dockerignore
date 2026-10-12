@@ -1,0 +1,11 @@
+
+node_modules
+.git
+.env
+session
+sessions
+baileys_store.json
+*.log
+package.json.backup
+.pm2
+

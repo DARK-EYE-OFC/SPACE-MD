@@ -1,0 +1,13 @@
+
+services:
+  - type: web
+    name: space-md
+    runtime: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+
