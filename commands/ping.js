@@ -1,37 +1,36 @@
 
-const settings = require('../settings.js');
-
-function formatTime(seconds) {
-    const days = Math.floor(seconds / (24 * 60 * 60));
-    seconds %= (24 * 60 * 60);
-
-    const hours = Math.floor(seconds / 3600);
-    seconds %= 3600;
-
-    const minutes = Math.floor(seconds / 60);
-    seconds = Math.floor(seconds % 60);
-
-    let time = '';
-
-    if (days > 0) time += `${days}d `;
-    if (hours > 0) time += `${hours}h `;
-    if (minutes > 0) time += `${minutes}m `;
-
-    if (seconds > 0 || time === '') {
-        time += `${seconds}s`;
+function formatTime(ms) {
+    if (ms < 1000) {
+        return `${ms} milliseconds`;
     }
 
-    return time.trim();
+    if (ms < 60000) {
+        const seconds = ms / 1000;
+        return `${Number(seconds.toFixed(2))} seconds`;
+    }
+
+    const totalSeconds = Math.floor(ms / 1000);
+    const days = Math.floor(totalSeconds / 86400);
+    const hours = Math.floor((totalSeconds % 86400) / 3600);
+    const minutes = Math.floor((totalSeconds % 3600) / 60);
+    const seconds = totalSeconds % 60;
+
+    const parts = [];
+    if (days) parts.push(`${days} day${days !== 1 ? 's' : ''}`);
+    if (hours) parts.push(`${hours} hour${hours !== 1 ? 's' : ''}`);
+    if (minutes) parts.push(`${minutes} minute${minutes !== 1 ? 's' : ''}`);
+    if (seconds && days === 0) {
+        parts.push(`${seconds} second${seconds !== 1 ? 's' : ''}`);
+    }
+
+    return parts.join(' ') || 'less than a second';
 }
 
 async function pingCommand(sock, chatId, message) {
     const react = async (emoji) => {
         try {
             await sock.sendMessage(chatId, {
-                react: {
-                    text: emoji,
-                    key: message.key
-                }
+                react: { text: emoji, key: message.key }
             });
         } catch (error) {
             console.error('Ping reaction error:', error);
@@ -39,62 +38,45 @@ async function pingCommand(sock, chatId, message) {
     };
 
     try {
-        // Loading reaction
         await react('♻️');
 
-        // Send initial ping message
         const start = Date.now();
 
         const sentMessage = await sock.sendMessage(
             chatId,
-            {
-                text: '♻️ *Pinging...*'
-            },
-            {
-                quoted: message
-            }
+            { text: '♻️ *Pinging...*' },
+            { quoted: message }
         );
 
-        // Calculate response latency
         const latency = Date.now() - start;
-
-        // Simple bot speed measurement
         const botSpeed = Math.max(1, latency);
+        const responseDelay = Date.now() - start;
 
         const finalText =
             `╔═══❖•ೋ° °ೋ•❖═══╗\n` +
             `      🏓 *PONG* 🇿🇼\n` +
             `╚═══❖•ೋ° °ೋ•❖═══╝\n\n` +
             `📈 *SPEED:* _${botSpeed}ms_\n` +
-            `🖥 *LATENCY:* _${latency}ms_\n\n` +
+            `⏰️ *DELAYED:* _${formatTime(responseDelay)}_\n\n` +
             `> *♤powered by DARK-EYE OFC DEV*`;
 
-        // Edit the original "Pinging..." message
         await sock.sendMessage(chatId, {
             text: finalText,
             edit: sentMessage.key
         });
 
-        // Done reaction
         await react('✨️');
-
     } catch (error) {
         console.error('Ping error:', error);
-
-        // Failed reaction
         await react('❌️');
 
         try {
             await sock.sendMessage(
                 chatId,
                 {
-                    text:
-                        `❌️ *Ping failed.*\n\n` +
-                        `🚀 *SPACE-MD*`
+                    text: `❌️ *Ping failed.*\n\n🚀 *SPACE-MD*`
                 },
-                {
-                    quoted: message
-                }
+                { quoted: message }
             );
         } catch (sendError) {
             console.error('Ping error message failed:', sendError);
@@ -103,3 +85,4 @@ async function pingCommand(sock, chatId, message) {
 }
 
 module.exports = pingCommand;
+

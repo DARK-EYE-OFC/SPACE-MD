@@ -139,7 +139,6 @@ const setProfilePicture = require('./commands/setpp');
 const facebookCommand = optionalCommand('facebook');
 const playCommand = require('./commands/play');
 const tiktokCommand = require('./commands/tiktok');
-const songCommand = require('./commands/song');
 const aiCommand = require('./commands/ai');
 const { handleTranslateCommand } = require('./commands/translate');
 const { handleSsCommand } = require('./commands/ss');
@@ -179,7 +178,7 @@ const repoCommand = require('./commands/repo');
 const darkeyeCommand = require('./commands/darkeye');
 const reportCommand = require('./commands/report');
 const uptimeCommand = require('./commands/uptime');
-
+const imageCommand = require('./commands/image');
 
 // Global settings
 global.packname = settings.packname;
@@ -245,10 +244,10 @@ if (activePrefix) {
     if (userMessage.startsWith(prefixLower)) {
         userMessage =
             '.' + userMessage.slice(activePrefix.length).trim();
-    } else {
-        // Different/old prefix = normal message.
-        userMessage = '';
-    }
+} else if (!['1', '2', '3', '4', '5', '6'].includes(userMessage.trim())) {
+    // Allow music format selections without a prefix.
+    userMessage = '';
+}	
 } else {
     // Prefixless mode will be handled separately.
     userMessage = userMessage.trim();
@@ -292,6 +291,15 @@ if (activePrefix) {
         if (isGroup && userMessage) {
             await handleBadwordDetection(sock, chatId, message, userMessage, senderId);
         }
+const commandName = userMessage.startsWith('.')
+    ? userMessage.slice(1).split(/\s+/)[0]
+    : '';
+
+if (['image', 'img', 'imagesearch', 'googleimage'].includes(commandName)) {
+    const args = userMessage.trim().split(/\s+/).slice(1);
+    await imageCommand.execute(sock, message, args, chatId);
+    return;
+}
 
         // Then check for command prefix
         if (!userMessage.startsWith('.')) {
@@ -961,7 +969,12 @@ case userMessage === '.fight' || userMessage === '.battle' || userMessage === '.
                 }
 
                 const match = userMessage.slice(8).trim();
-                await handleChatbotCommand(sock, chatId, message, match);
+             await handleChatbotCommand(
+    sock,
+    chatId,
+    message,
+    match ? match.split(/\s+/) : []
+);
                 break;
             case userMessage.startsWith('.take'):
                 const takeArgs = userMessage.slice(5).trim().split(' ');
@@ -1116,12 +1129,17 @@ case userMessage.startsWith('.pair'):
             case userMessage.startsWith('.fb') || userMessage.startsWith('.facebook'):
                 await facebookCommand(sock, chatId, message);
                 break;
+	
             case userMessage.startsWith('.song') || userMessage.startsWith('.music'):
-                await playCommand(sock, chatId, message);
-                break;
-            case userMessage.startsWith('.play') || userMessage.startsWith('.mp3') || userMessage.startsWith('.ytmp3') || userMessage.startsWith('.yts'):
-                await songCommand(sock, chatId, message);
-                break;
+case userMessage.startsWith('.play') || userMessage.startsWith('.mp3') || userMessage.startsWith('.ytmp3') || userMessage.startsWith('.yts'):
+case ['1', '2', '3', '4', '5', '6'].includes(userMessage.trim()):
+    await playCommand.execute(
+        sock,
+        message,
+        userMessage.trim().split(/\s+/).slice(1)
+    );
+    break;
+
             case userMessage.startsWith('.video') || userMessage.startsWith('.ytmp4'):
                 await videoCommand(sock, chatId, message);
                 break;
